@@ -1,3 +1,13 @@
+---
+title: Snap Tool Web
+emoji: 📸
+colorFrom: yellow
+colorTo: orange
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # ⚡ SnapBlast - Ultimate Snapchat Media & Profile Suite
 
 <div align="center">
