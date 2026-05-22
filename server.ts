@@ -49,7 +49,7 @@ let ytdlpUsageCount = 0;
 // Interactive Configuration States
 let configCacheBypass = false;
 let configYtdlpPriority = false;
-let configScraperTimeout = 15000;
+let configScraperTimeout = 3000;
 
 // Instantaneous CPU Delta Tracker
 let currentCpuUsage = 0;
@@ -2204,6 +2204,348 @@ async function startServer() {
 
       let { username: rawInput } = req.body;
       if (!rawInput) return res.status(400).json({ error: "Username or Snapchat link is required." });
+
+      // Split the rawInput by comma, semicolon, whitespace, or newlines
+      const parts = rawInput.split(/[,;\s\n]+/).map((s: string) => s.trim()).filter(Boolean);
+
+      if (parts.length > 1) {
+        // --- MULTI-ACCOUNT BULK DOWNLOAD LOGIC ---
+        if (parts.length > 5) {
+          return res.status(400).json({ error: "Bulk downloader supports up to 5 accounts at a time. Please reduce the number of accounts and try again." });
+        }
+
+        if (activeTasks + parts.length > MAX_CONCURRENT_TASKS) {
+          return res.status(429).json({ error: "Server is busy. Please try again in a few seconds." });
+        }
+
+        activeTasks += parts.length;
+
+        try {
+          const scrapeSingleInput = async (part: string) => {
+            try {
+              let resolvedPart = await resolveSnapchatUrl(part);
+              const isDirectVideoPart = /snapchat\.com\/spotlight\//i.test(resolvedPart) || 
+                                        /snapchat\.com\/p\//i.test(resolvedPart) ||
+                                        /snapchat\.com\/s\//i.test(resolvedPart) || 
+                                        /snapchat\.com\/add\/@?[a-zA-Z0-9._-]{3,30}\/story\//i.test(resolvedPart) ||
+                                        /t\.snapchat\.com/i.test(resolvedPart);
+
+              let fallbackDirectResultPart: any = null;
+              let usernamePart = "";
+
+              if (isDirectVideoPart) {
+                console.log(`[Bulk Videos Parallel] Direct link detected for part: ${resolvedPart}`);
+                try {
+                  let videoUrl = "";
+                  let thumbnail = "";
+                  let title = "Snapchat Video";
+                  let uploader = "Snapchat User";
+                  let finalUsername = "video";
+
+                  const scraped = await scrapeSpotlightMedia(resolvedPart);
+                  if (scraped && scraped.videoUrl) {
+                    cheerioUsageCount++;
+                    videoUrl = scraped.videoUrl;
+                    thumbnail = scraped.thumbnail || "";
+                    title = scraped.title || "Snapchat Video";
+                    uploader = scraped.uploader || scraped.displayName || "Snapchat User";
+                    finalUsername = scraped.username || "video";
+                  } else {
+                    ytdlpUsageCount++;
+                    const ytInfo = await yt_dlp_fast(resolvedPart, ytDlpWrap);
+                    videoUrl = ytInfo.videoUrl;
+                    thumbnail = ytInfo.thumbnail || "";
+                    title = ytInfo.title || "Snapchat Video";
+                    uploader = ytInfo.uploader || "Snapchat User";
+                    let candidateUsername = [ytInfo.uploader_id, ytInfo.uploader]
+                      .filter(Boolean)
+                      .map((value: string) => value.trim())
+                      .find((value: string) => /^[a-zA-Z0-9._-]{3,30}$/.test(value));
+                    finalUsername = candidateUsername || "video";
+                  }
+
+                  if (videoUrl) {
+                    const videoItem = {
+                      id: `${finalUsername}_direct_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+                      type: resolvedPart.includes('/spotlight/') ? 'spotlight' : 'highlight',
+                      title: title,
+                      thumbnail: thumbnail,
+                      duration: '10',
+                      videoUrl: videoUrl,
+                      downloadUrl: `/api/proxy?url=${encodeURIComponent(videoUrl)}&filename=${encodeURIComponent(finalUsername)}_video.mp4`,
+                    };
+
+                    const proxiedThumb = thumbnail && thumbnail.startsWith("http")
+                      ? `/api/dp-proxy?url=${encodeURIComponent(thumbnail)}&username=${finalUsername}`
+                      : (thumbnail || `https://app.snapchat.com/web/deeplink/snapcode?username=${finalUsername}&type=SVG&bitmoji=enable`);
+
+                    fallbackDirectResultPart = {
+                      success: true,
+                      username: finalUsername,
+                      displayName: uploader,
+                      uploader: uploader,
+                      profilePicture: proxiedThumb,
+                      thumbnail: proxiedThumb,
+                      stories: [videoItem],
+                      totalVideos: 1,
+                      spotlights: resolvedPart.includes('/spotlight/') ? 1 : 0,
+                      highlights: resolvedPart.includes('/spotlight/') ? 0 : 1,
+                      stats: {
+                        subscribers: 0,
+                        stories: 1,
+                        highlights: resolvedPart.includes('/spotlight/') ? 0 : 1,
+                        spotlights: resolvedPart.includes('/spotlight/') ? 1 : 0,
+                      }
+                    };
+                  }
+
+                  if (finalUsername && finalUsername !== "video") {
+                    usernamePart = finalUsername;
+                  }
+                } catch (e: any) {
+                  console.error(`[Bulk Videos Parallel] Resolving direct video fallback failed:`, e.message);
+                }
+              }
+
+              if (!usernamePart) {
+                try {
+                  usernamePart = await resolveUsernameFromAnyInput(resolvedPart);
+                } catch (err: any) {
+                  if (fallbackDirectResultPart) return fallbackDirectResultPart;
+                  return null;
+                }
+              }
+
+              if (!usernamePart || usernamePart.toLowerCase() === "video" || usernamePart.length < 1) {
+                if (fallbackDirectResultPart) return fallbackDirectResultPart;
+                return null;
+              }
+
+              // Scraping the profile page
+              let videos: any[] = [];
+              let scrapedProfile: any = null;
+
+              try {
+                const pageData = await fetchSnapchatProfilePage(usernamePart);
+                if (pageData.status === 200) {
+                  scrapedProfile = await scrapeSnapchatProfile(usernamePart, pageData);
+                  cheerioUsageCount++;
+                  
+                  const $ = pageData.$;
+                  let nextDataStr = '';
+                  $('script').each((_, el) => {
+                    const content = ($(el).html() || '').trim();
+                    if (content.startsWith('{"props":')) {
+                      nextDataStr = content;
+                    } else if ($(el).attr('id') === '__NEXT_DATA__') {
+                      nextDataStr = content;
+                    }
+                  });
+
+                  if (nextDataStr) {
+                    try {
+                      const data = JSON.parse(nextDataStr);
+                      const pp = data.props?.pageProps;
+                      if (pp) {
+                        // Curated Highlights
+                        if (Array.isArray(pp.curatedHighlights)) {
+                          pp.curatedHighlights.forEach((ch: any, highlightIdx: number) => {
+                            const title = ch.storyTitle?.value || `Highlight ${highlightIdx + 1}`;
+                            const thumbUrl = ch.thumbnailUrl?.value || "";
+                            if (Array.isArray(ch.snapList)) {
+                              ch.snapList.forEach((snap: any, snapIdx: number) => {
+                                const mediaUrl = snap.snapUrls?.mediaUrl;
+                                if (mediaUrl) {
+                                  videos.push({
+                                    id: `${usernamePart}_highlight_${highlightIdx}_${snapIdx}`,
+                                    type: 'highlight',
+                                    title: title,
+                                    thumbnail: snap.snapUrls?.mediaPreviewUrl?.value || thumbUrl || mediaUrl,
+                                    duration: snap.timestampInSec?.value ? '15' : '15',
+                                    videoUrl: mediaUrl,
+                                    downloadUrl: `/api/proxy?url=${encodeURIComponent(mediaUrl)}&filename=${encodeURIComponent(usernamePart)}_highlight_${highlightIdx}_${snapIdx}.mp4`,
+                                  });
+                                }
+                              });
+                            }
+                          });
+                        }
+
+                        // Spotlight Highlights
+                        if (Array.isArray(pp.spotlightHighlights)) {
+                          pp.spotlightHighlights.forEach((sh: any, spotlightIdx: number) => {
+                            const title = sh.storyTitle?.value || `Spotlight ${spotlightIdx + 1}`;
+                            const thumbUrl = sh.thumbnailUrl?.value || "";
+                            if (Array.isArray(sh.snapList)) {
+                              sh.snapList.forEach((snap: any, snapIdx: number) => {
+                                const mediaUrl = snap.snapUrls?.mediaUrl;
+                                if (mediaUrl) {
+                                  videos.push({
+                                    id: `${usernamePart}_spotlight_${spotlightIdx}_${snapIdx}`,
+                                    type: 'spotlight',
+                                    title: title,
+                                    thumbnail: snap.snapUrls?.mediaPreviewUrl?.value || thumbUrl || mediaUrl,
+                                    duration: '10',
+                                    videoUrl: mediaUrl,
+                                    downloadUrl: `/api/proxy?url=${encodeURIComponent(mediaUrl)}&filename=${encodeURIComponent(usernamePart)}_spotlight_${spotlightIdx}_${snapIdx}.mp4`,
+                                  });
+                                }
+                              });
+                            }
+                          });
+                        }
+                      }
+                    } catch (e: any) {
+                      console.log(`[Bulk Videos Parallel] NextJS parsing failed for ${usernamePart}:`, e.message);
+                    }
+                  }
+
+                  // LD+JSON Spotlight videos fallback
+                  $('script[type="application/ld+json"]').each((_, el) => {
+                    const rawJson = ($(el).html() || "").trim();
+                    if (!rawJson) return;
+                    try {
+                      const json = JSON.parse(rawJson);
+                      const items = json["@graph"] || (Array.isArray(json) ? json : [json]);
+                      for (const item of items) {
+                        if (item["@type"] === "VideoObject" && item.contentUrl) {
+                          const mediaUrl = item.contentUrl;
+                          const title = item.name || `Spotlight Video`;
+                          const thumbnail = item.thumbnailUrl || mediaUrl;
+                          if (!videos.some(v => v.videoUrl === mediaUrl)) {
+                            videos.push({
+                              id: `${usernamePart}_spotlight_ld_${videos.length}`,
+                              type: 'spotlight',
+                              title: title,
+                              thumbnail: thumbnail,
+                              duration: '12',
+                              videoUrl: mediaUrl,
+                              downloadUrl: `/api/proxy?url=${encodeURIComponent(mediaUrl)}&filename=${encodeURIComponent(usernamePart)}_spotlight_${videos.length}.mp4`,
+                            });
+                          }
+                        }
+                      }
+                    } catch {}
+                  });
+                }
+              } catch (scrapeErr: any) {
+                console.log(`[Bulk Videos Parallel] Web scraping failed for ${usernamePart}:`, scrapeErr.message);
+              }
+
+              if (videos.length === 0) {
+                if (fallbackDirectResultPart) return fallbackDirectResultPart;
+                return null;
+              }
+
+              const spotlightVideos = videos.filter((v: any) => v.type === 'spotlight');
+              const highlightVideos = videos.filter((v: any) => v.type === 'highlight');
+
+              let finalDisplayName = scrapedProfile?.displayName || (usernamePart.charAt(0).toUpperCase() + usernamePart.slice(1));
+              finalDisplayName = cleanDisplayName(finalDisplayName);
+              if (!finalDisplayName || finalDisplayName.toLowerCase() === 'snapchat' || finalDisplayName.toLowerCase() === 'snapchat user' || finalDisplayName.toLowerCase() === 'snapchat spotlight') {
+                finalDisplayName = usernamePart.charAt(0).toUpperCase() + usernamePart.slice(1);
+              }
+
+              const bulkAvatar = scrapedProfile?.avatar;
+              const proxiedBulkAvatar = bulkAvatar && bulkAvatar.startsWith("http")
+                ? `/api/dp-proxy?url=${encodeURIComponent(bulkAvatar)}&username=${usernamePart}`
+                : `https://app.snapchat.com/web/deeplink/snapcode?username=${usernamePart}&type=SVG&bitmoji=enable`;
+
+              return {
+                success: true,
+                username: scrapedProfile?.username || usernamePart,
+                displayName: finalDisplayName,
+                uploader: finalDisplayName,
+                profilePicture: proxiedBulkAvatar,
+                thumbnail: proxiedBulkAvatar,
+                stories: videos,
+                totalVideos: videos.length,
+                spotlights: spotlightVideos.length,
+                highlights: highlightVideos.length,
+                stats: {
+                  subscribers: scrapedProfile?.subscribers || 0,
+                  stories: videos.length,
+                  highlights: highlightVideos.length,
+                  spotlights: spotlightVideos.length,
+                }
+              };
+            } catch (err: any) {
+              console.error(`[Bulk Videos Parallel] Error scraping part ${part}:`, err.message);
+              return null;
+            }
+          };
+
+          const allScraped = await Promise.all(parts.map(p => scrapeSingleInput(p)));
+          const validResults = allScraped.filter(Boolean) as any[];
+
+          if (validResults.length === 0) {
+            const latency = Date.now() - start;
+            addSystemAlert("error", "Bulk Downloader", `No public bulk videos found for any of the provided accounts: ${rawInput}`);
+            return res.status(404).json({
+              error: `No public videos found for any of the entered profiles (${parts.join(", ")}). The profiles might be private or have no public content.`
+            });
+          }
+
+          // Aggregating all results
+          const aggregatedStories: any[] = [];
+          let aggregatedTotalVideos = 0;
+          let aggregatedSpotlights = 0;
+          let aggregatedHighlights = 0;
+          let aggregatedSubscribers = 0;
+          const successfulUsernames: string[] = [];
+          const successfulDisplayNames: string[] = [];
+          let firstValidAvatar = "";
+
+          validResults.forEach(res => {
+            aggregatedStories.push(...res.stories);
+            aggregatedTotalVideos += res.totalVideos;
+            aggregatedSpotlights += res.spotlights;
+            aggregatedHighlights += res.highlights;
+            aggregatedSubscribers += res.stats?.subscribers || 0;
+            successfulUsernames.push(res.username);
+            successfulDisplayNames.push(res.displayName);
+            if (!firstValidAvatar && res.profilePicture) {
+              firstValidAvatar = res.profilePicture;
+            }
+          });
+
+          if (!firstValidAvatar) {
+            firstValidAvatar = `https://app.snapchat.com/web/deeplink/snapcode?username=${successfulUsernames[0]}&type=SVG&bitmoji=enable`;
+          }
+
+          const compositeUsername = successfulUsernames.join(", ");
+          const compositeDisplayName = successfulDisplayNames.join(" + ") + " (Bulk)";
+
+          const result = {
+            success: true,
+            username: compositeUsername,
+            displayName: compositeDisplayName,
+            uploader: compositeDisplayName,
+            profilePicture: firstValidAvatar,
+            thumbnail: firstValidAvatar,
+            stories: aggregatedStories,
+            totalVideos: aggregatedStories.length,
+            spotlights: aggregatedSpotlights,
+            highlights: aggregatedHighlights,
+            stats: {
+              subscribers: aggregatedSubscribers,
+              stories: aggregatedStories.length,
+              highlights: aggregatedHighlights,
+              spotlights: aggregatedSpotlights,
+            }
+          };
+
+          const latency = Date.now() - start;
+          addActivityLog("bulk", compositeUsername, "success", latency, `Successfully extracted bulk media for ${parts.length} accounts (${aggregatedStories.length} snaps total) in ${latency}ms.`);
+          return res.json(result);
+        } catch (err: any) {
+          const latency = Date.now() - start;
+          addActivityLog("bulk", "multiple", "failed", latency, `Failed to fetch bulk media for multiple accounts: ${err.message}`);
+          return res.status(500).json({ error: "Failed to download videos from multiple accounts." });
+        } finally {
+          activeTasks -= parts.length;
+        }
+      }
 
       rawInput = await resolveSnapchatUrl(rawInput);
 
