@@ -1,0 +1,455 @@
+/* Official White Theme Configuration - Getinbex Tools */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --brand-color: #0ea5e9;
+  --brand-color-dark: #0284c7;
+}
+
+@theme {
+  --color-snap-brand: var(--brand-color);
+  --color-snap-brand-dark: var(--brand-color-dark);
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-home-bg: #ffffff;
+  --color-home-fg: #0a0a14;
+  --color-home-muted: #ececf0;
+  --color-home-muted-fg: #717182;
+  --color-home-accent: #e9ebef;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 transition-colors duration-300 antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "cv02", "cv05", "cv11";
+  }
+}
+
+/* Home Page Specific Styles */
+.home-hero {
+  max-width: 1280px;
+  @apply mx-auto py-20 px-6 text-center;
+}
+
+.home-hero-badge {
+  @apply inline-flex items-center gap-2 py-2 px-4 rounded-full bg-slate-100 text-slate-900 text-sm font-medium mb-6;
+}
+
+.home-hero h1 {
+  @apply font-semibold mb-6;
+  font-size: clamp(3rem, 8vw, 5rem);
+  line-height: 1.1;
+  background: linear-gradient(90deg, #ec4899, #a855f7, #eab308);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.home-hero p {
+  @apply text-slate-500 max-w-2xl mx-auto mb-8 leading-relaxed;
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+}
+
+.home-hero-features {
+  @apply flex flex-wrap justify-center gap-3 mb-12;
+}
+
+.home-feature-pill {
+  @apply inline-flex items-center gap-2 py-1.5 px-4 rounded-full bg-white border border-slate-200 text-sm font-medium;
+}
+
+.home-section {
+  max-width: 1280px;
+  @apply mx-auto pb-20 px-6;
+}
+
+.home-section-header {
+  @apply text-center mb-12;
+}
+
+.home-section-header h2 {
+  @apply font-bold mb-4 tracking-tight;
+  font-size: clamp(2rem, 5vw, 3rem);
+  background: linear-gradient(135deg, #0a0a14 0%, #4a4a6a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.home-section-header h2::after {
+  content: '';
+  @apply block w-15 h-1 bg-linear-to-r from-pink-500 to-purple-500 rounded-sm mx-auto mt-2.5;
+}
+
+.home-section-header p {
+  @apply text-slate-500 max-w-3xl mx-auto text-base leading-relaxed;
+  margin-bottom: 0;
+}
+
+.home-guide-section {
+  max-width: 1280px;
+  @apply mx-auto px-6 py-20;
+}
+
+.home-guide-steps {
+  @apply grid gap-6 md:grid-cols-3;
+}
+
+.home-guide-step {
+  @apply flex flex-col items-center gap-6 rounded-3xl bg-white border border-slate-200 p-8 text-center shadow-sm;
+  opacity: 0;
+  transform: translateY(24px);
+  animation: home-guide-fadeUp 0.6s ease forwards;
+}
+
+.home-guide-step:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.home-guide-step:nth-child(2) {
+  animation-delay: 0.25s;
+}
+
+.home-guide-step:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+.home-guide-icon-wrap {
+  @apply w-20 h-20 rounded-[1.5rem] bg-slate-50 flex items-center justify-center;
+}
+
+.home-guide-icon-wrap svg {
+  width: 48px;
+  height: 48px;
+  stroke: #111827;
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.home-guide-step:hover .home-guide-icon-wrap svg {
+  transform: scale(1.08);
+}
+
+.home-guide-step-label {
+  @apply text-base font-semibold text-slate-900 leading-6;
+}
+
+@keyframes home-guide-fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-tools-grid {
+  @apply grid gap-6;
+}
+
+.action-btn {
+  @apply inline-flex items-center justify-center gap-2 w-full rounded-2xl border border-gray-200 bg-gray-100 text-gray-700 font-semibold py-4 transition-all hover:bg-gray-200;
+}
+
+.watermark {
+  @apply flex items-center justify-end gap-2;
+}
+
+.watermark-icon {
+  @apply inline-flex items-center justify-center rounded-sm bg-[#FFFC00];
+  width: 26px;
+  height: 26px;
+}
+
+.watermark-text {
+  @apply text-xs text-slate-400 font-medium;
+}
+
+.home-tools-branding {
+  @apply flex items-center justify-center gap-1 mt-5;
+  padding-top: 2px;
+}
+
+.home-tools-branding-image {
+  width: auto;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}
+
+.home-tools-branding-text {
+  @apply text-slate-900 font-semibold text-sm;
+  letter-spacing: 0;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 2px;
+}
+
+.home-tool-card {
+  @apply relative overflow-hidden rounded-xl bg-white border border-slate-200 p-6 cursor-pointer transition-all duration-300;
+}
+
+.home-tool-card:hover {
+  @apply shadow-2xl scale-[1.02] border-purple-200;
+}
+
+.home-tool-card-inner {
+  @apply flex items-start gap-4;
+}
+
+.home-tool-icon {
+  @apply shrink-0 w-12 h-12 rounded-lg bg-slate-50 flex items-center justify-center transition-colors duration-300;
+}
+
+.home-tool-card:hover .home-tool-icon {
+  @apply bg-slate-100;
+}
+
+.home-tool-content h3 {
+  @apply text-lg font-medium mb-1.5;
+}
+
+.home-tool-content p {
+  @apply text-slate-500 text-sm leading-relaxed;
+}
+
+.home-security-grid {
+  @apply grid gap-6;
+}
+
+.home-security-card {
+  @apply flex flex-col items-center text-center p-8 rounded-2xl bg-white border border-slate-200 transition-all duration-300 cursor-default;
+}
+
+.home-security-card:hover {
+  @apply border-purple-200 shadow-2xl -translate-y-1;
+}
+
+.home-security-icon {
+  @apply w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center mb-6 transition-colors duration-300;
+}
+
+.home-security-card:hover .home-security-icon {
+  @apply bg-slate-100;
+}
+
+.home-security-card h3 {
+  @apply text-base font-medium mb-3;
+}
+
+.home-security-card p {
+  @apply text-slate-500 text-sm leading-relaxed;
+}
+
+/* Pro Tips Card Styles - Horizontal Layout */
+.home-pro-tips-grid {
+  @apply grid gap-6;
+}
+
+.home-pro-tips-card {
+  @apply flex items-start gap-4 p-6 rounded-2xl bg-white border border-slate-200 transition-all duration-300 select-none cursor-default;
+}
+
+.home-pro-tips-card:hover {
+  @apply border-slate-300 shadow-lg;
+}
+
+.home-pro-tips-icon {
+  @apply flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center transition-all duration-300;
+  background-color: rgba(226, 232, 240, 0.4);
+  color: #64748b;
+}
+
+.home-pro-tips-card:hover .home-pro-tips-icon {
+  background-color: rgba(226, 232, 240, 0.4);
+}
+
+.home-pro-tips-content {
+  @apply flex-1;
+}
+
+.home-pro-tips-card h3 {
+  @apply text-base font-semibold mb-2 text-gray-900;
+}
+
+.home-pro-tips-card p {
+  @apply text-slate-600 text-sm leading-relaxed;
+}
+
+.snap-input-border {
+  @apply border border-gray-200 focus:border-snap-brand focus:ring-4 focus:ring-snap-brand/10;
+}
+
+/* Comparison Table Styles */
+.home-comparison-divider {
+  @apply h-1 bg-gray-100 mx-auto rounded-full my-6;
+  max-width: 100px;
+}
+
+.home-comparison-table {
+  @apply w-full border-collapse overflow-hidden rounded-2xl border border-slate-200 mx-auto;
+  max-width: 900px;
+}
+
+.home-comparison-header {
+  @apply bg-gray-50 border-b border-slate-200;
+}
+
+.home-comparison-header th {
+  @apply px-5 py-4 text-left font-semibold text-gray-900 text-sm;
+  text-align: center;
+}
+
+.home-comparison-header th:first-child {
+  @apply text-left;
+}
+
+.home-comparison-row {
+  @apply border-b border-slate-200 hover:bg-gray-50 transition-colors;
+}
+
+.home-comparison-row:last-child {
+  @apply border-b-0;
+}
+
+.home-comparison-row td {
+  @apply px-5 py-5 text-gray-700 text-sm;
+  text-align: center;
+}
+
+.home-comparison-row td:first-child {
+  @apply text-left font-medium text-gray-900;
+}
+
+.home-comparison-check {
+  @apply text-green-600 font-bold text-xl;
+  opacity: 0.75;
+}
+
+.home-comparison-cross {
+  @apply text-red-500 font-bold text-xl;
+  opacity: 0.6;
+}
+
+/* Stats Grid Styles */
+.home-stats-grid {
+  @apply grid;
+}
+
+.home-stat-card {
+  @apply flex flex-col items-center text-center p-7 rounded-2xl bg-white border border-slate-200 transition-all duration-300 cursor-default hover:shadow-lg hover:border-purple-200;
+}
+
+.home-stat-icon {
+  @apply w-14 h-14 rounded-xl bg-slate-50 flex items-center justify-center mb-5 text-slate-600;
+}
+
+.home-stat-card h3 {
+  @apply text-3xl font-bold text-gray-900 mb-2;
+}
+
+.home-stat-card p {
+  @apply text-sm font-medium text-slate-500;
+}
+
+/* FAQ Styles */
+.home-faq-list {
+  @apply space-y-3 max-w-4xl mx-auto;
+}
+
+.home-faq-item {
+  @apply bg-white border border-slate-200 rounded-2xl overflow-hidden;
+}
+
+.home-faq-question-header {
+  @apply flex items-center justify-between p-7 cursor-pointer hover:bg-slate-50 transition-colors;
+}
+
+.home-faq-question-header h3 {
+  @apply text-base font-bold text-gray-900 leading-relaxed flex-1;
+}
+
+.home-faq-toggle {
+  @apply text-2xl font-bold text-snap-brand ml-4 flex-shrink-0;
+}
+
+.home-faq-answer {
+  @apply bg-slate-50 border-t border-slate-100 p-7;
+}
+
+.home-faq-answer p {
+  @apply text-sm text-slate-600 leading-relaxed leading-6;
+}
+
+.home-faq-button-group {
+  @apply flex justify-center mt-10 max-w-4xl mx-auto;
+}
+
+.home-faq-button {
+  @apply px-7 py-2 text-sm font-semibold text-white rounded-lg transition-all duration-200;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+}
+
+.home-faq-button:hover {
+  @apply scale-105 shadow-lg;
+  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.4);
+}
+
+.home-faq-button:active {
+  @apply scale-95;
+}
+
+.snap-button-shadow {
+  box-shadow: 0 4px 12px -2px rgba(14, 165, 233, 0.25);
+}
+
+.premium-action-btn {
+  @apply relative overflow-hidden z-1 text-gray-900 font-bold rounded-[30em] px-10 h-14 min-w-[12rem] flex items-center justify-center transition-all duration-300;
+  background-image: linear-gradient(to right, #0fd850 0%, #f9f047 100%);
+  box-shadow: 6px 6px 12px #c5c5c5, -6px -6px 12px #ffffff;
+}
+
+.premium-action-btn:hover {
+  @apply scale-105 shadow-xl;
+}
+
+.premium-action-btn:active {
+  @apply scale-95;
+}
+
+.scribble-container {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
+.scribble-svg {
+  position: absolute;
+  left: -5%;
+  bottom: -10%;
+  width: 110%;
+  height: 40%;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.scribble-path {
+  stroke: var(--color-snap-brand);
+  stroke-width: 6;
+  stroke-linecap: round;
+  fill: transparent;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 0;
+}
+
+@keyframes scribble-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+

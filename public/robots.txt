@@ -1,0 +1,71 @@
+# Getinbex Robots.txt - SEO Optimized
+# Last Updated: May 12, 2026
+# General Rules for all bots
+User-agent: *
+Allow: /
+Allow: /public/
+Allow: /sitemap.xml
+Disallow: /result
+Disallow: /api/
+Disallow: /admin
+Disallow: /.env
+Disallow: /node_modules
+Disallow: /dist
+Disallow: /*.json$
+Disallow: /src/
+Crawl-delay: 1
+
+# Specific rules for Googlebot (most important)
+User-agent: Googlebot
+Allow: /
+Allow: /public/
+Allow: /sitemap.xml
+Disallow: /result
+Disallow: /api/
+Crawl-delay: 0
+Request-rate: 50/1s
+
+# Specific rules for Bingbot
+User-agent: Bingbot
+Allow: /
+Allow: /public/
+Disallow: /result
+Disallow: /api/
+Crawl-delay: 1
+Request-rate: 30/1s
+
+# Yandex
+User-agent: YandexBot
+Allow: /
+Disallow: /result
+Crawl-delay: 1
+
+# DuckDuckGo
+User-agent: DuckDuckBot
+Allow: /
+Disallow: /result
+
+# Disallow bad/aggressive bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+User-agent: SemrushBot-BA
+User-agent: SemrushBot-SA
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: Exabot
+Disallow: /
+
+User-agent: Gigabot
+Disallow: /
+
+# Sitemap location
+Sitemap: https://getinbex.com/sitemap.xml
+Sitemap: https://getinbex.com/public/sitemap.xml
