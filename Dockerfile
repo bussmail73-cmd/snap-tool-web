@@ -24,6 +24,7 @@ RUN npm run build
 # Expose port (Hugging Face uses 7860 by default)
 EXPOSE 7860
 ENV PORT=7860
+ENV NODE_ENV=production
 
 # Start the Express server
 CMD ["npm", "run", "start"]
