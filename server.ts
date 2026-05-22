@@ -31,7 +31,7 @@ const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname);
 
 // --- CONFIG & CONSTANTS ---
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 const CACHE_MAX_SIZE = 10000;  
 const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 const MAX_CONCURRENT_TASKS = 50;
