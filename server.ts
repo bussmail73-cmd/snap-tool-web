@@ -686,6 +686,7 @@ async function startServer() {
       helmet({
         crossOriginResourcePolicy: { policy: "cross-origin" },
         contentSecurityPolicy: false,
+        frameguard: false,
       })
     );
 
