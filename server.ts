@@ -969,6 +969,277 @@ async function startServer() {
     });
 
     // =====================================================
+    // HELPER: Format ISO Date to Relative Time
+    // =====================================================
+    function formatRelativeTime(isoString: string): string {
+      try {
+        if (!isoString) return "";
+        const date = new Date(isoString);
+        const now = new Date();
+        const diffMs = now.getTime() - date.getTime();
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHour = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHour / 24);
+
+        if (diffSec < 60) return "Just now";
+        if (diffMin < 60) return `${diffMin}m ago`;
+        if (diffHour < 24) return `${diffHour}h ago`;
+        if (diffDay < 7) return `${diffDay}d ago`;
+        
+        return date.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      } catch {
+        return "";
+      }
+    }
+
+    // =====================================================
+    // CORE: Shared Story Scraper Controller for Decoupled Tools
+    // =====================================================
+    async function handleStoryToolRequest(req: express.Request, res: express.Response, toolName: "story-viewer" | "story-downloader") {
+      const start = Date.now();
+      let { username: rawInput } = req.body;
+      if (!rawInput) {
+        return res.status(400).json({ error: "Username or Snapchat story link is required." });
+      }
+
+      rawInput = await resolveSnapchatUrl(rawInput);
+
+      let username = "";
+      let isDirectStoryLink = false;
+      let storyUrl = "";
+
+      const storyLinkPattern = /(?:snapchat|snap)\.com\/s\/|(?:snapchat|snap)\.com\/add\/@?[a-zA-Z0-9._-]{3,30}\/story\//i;
+      if (storyLinkPattern.test(rawInput.trim())) {
+        isDirectStoryLink = true;
+        storyUrl = rawInput.trim().split("?")[0].split("#")[0];
+        const match = rawInput.match(/(?:snapchat|snap)\.com\/add\/@?([a-zA-Z0-9._-]{3,30})\/story\//i);
+        username = match ? match[1].toLowerCase() : "";
+      } else {
+        try {
+          username = await resolveUsernameFromAnyInput(rawInput);
+          if (!username || username.length < 1) {
+            return res.status(400).json({ error: "Invalid username format. Please enter a valid Snapchat username." });
+          }
+        } catch (error: any) {
+          if (error.message === "REDIRECT_FAILED") {
+            return res.status(400).json({
+              error: "We could not resolve this short Snapchat link. Snapchat might be rate-limiting requests. Please try pasting the username or full link directly."
+            });
+          } else {
+            return res.status(400).json({ error: "Invalid input format. Please enter a valid Snapchat username or link." });
+          }
+        }
+      }
+
+      try {
+        if (isDirectStoryLink) {
+          let info: any = null;
+          const scraped = await scrapeSpotlightMedia(storyUrl);
+          if (scraped && scraped.videoUrl) {
+            cheerioUsageCount++;
+            info = {
+              videoUrl: scraped.videoUrl,
+              thumbnail: scraped.thumbnail,
+              title: scraped.title,
+              uploader: scraped.uploader,
+              username: scraped.username,
+            };
+          } else {
+            ytdlpUsageCount++;
+            const ytInfo = await yt_dlp_fast(storyUrl, ytDlpWrap);
+            const finalUsername = scraped?.username || username || ytInfo.uploader_id || undefined;
+            let finalDisplayName = scraped?.displayName || scraped?.uploader || undefined;
+            if (!finalDisplayName || finalDisplayName.toLowerCase() === 'snapchat' || finalDisplayName.toLowerCase() === 'snapchat user') {
+              finalDisplayName = finalUsername || ytInfo.uploader || "Snapchat User";
+            }
+            finalDisplayName = cleanDisplayName(finalDisplayName);
+            if (!finalDisplayName || finalDisplayName.toLowerCase() === 'snapchat' || finalDisplayName.toLowerCase() === 'snapchat user') {
+              finalDisplayName = finalUsername ? (finalUsername.charAt(0).toUpperCase() + finalUsername.slice(1)) : "Snapchat User";
+            }
+
+            info = {
+              videoUrl: ytInfo.videoUrl,
+              thumbnail: scraped?.thumbnail || ytInfo.thumbnail || "",
+              title: (scraped?.title && scraped.title !== 'Snapchat Spotlight') ? scraped.title : (ytInfo.title || "Snapchat Story"),
+              uploader: finalDisplayName,
+              username: finalUsername,
+            };
+          }
+
+          const uploadDateStr = new Date().toISOString();
+          const storyItem = {
+            id: Math.random().toString(36).slice(2, 10),
+            type: "video",
+            url: info.videoUrl,
+            videoUrl: info.videoUrl,
+            thumbnail: info.thumbnail || "",
+            title: info.title || "Snapchat Story",
+            uploadDate: uploadDateStr,
+            formattedTime: formatRelativeTime(uploadDateStr),
+            downloadUrl: `/api/proxy?url=${encodeURIComponent(info.videoUrl)}&filename=snapchat_story_${Date.now()}.mp4`,
+          };
+
+          const result = {
+            success: true,
+            username: info.username || username,
+            displayName: info.uploader || "Snapchat User",
+            uploader: info.uploader || "Snapchat User",
+            profilePicture: info.thumbnail || `https://app.snapchat.com/web/deeplink/snapcode?username=${info.username || username}&type=SVG&bitmoji=enable`,
+            thumbnail: info.thumbnail || `https://app.snapchat.com/web/deeplink/snapcode?username=${info.username || username}&type=SVG&bitmoji=enable`,
+            stories: [storyItem],
+            videos: [storyItem],
+            photos: [],
+            profileUrl: storyUrl,
+            stats: { subscribers: 0, stories: 1, highlights: 0, spotlights: 0 }
+          };
+
+          const latency = Date.now() - start;
+          addActivityLog("stories", info.username || username || "anonymous", "success", latency, `[${toolName}] Resolved direct story link in ${latency}ms.`);
+          return res.json(result);
+        }
+
+        const pageData = await fetchSnapchatProfilePage(username);
+        const profile = await scrapeSnapchatProfile(username, pageData);
+
+        if (pageData.status !== 200) {
+          throw new Error("Profile not found");
+        }
+        cheerioUsageCount++;
+
+        const $ = pageData.$;
+        const videos: any[] = [];
+        const photos: any[] = [];
+
+        // Method 1: JSON-LD structured data (most reliable)
+        $('script[type="application/ld+json"]').each((_, el) => {
+          const rawJson = ($(el).html() || "").trim();
+          if (!rawJson) return;
+          try {
+            const json = JSON.parse(rawJson);
+            const items = json["@graph"] || (Array.isArray(json) ? json : [json]);
+            for (const item of items) {
+              if (item.contentUrl) {
+                const isImg = item["@type"] === "ImageObject";
+                const uploadDateStr = item.uploadDate || new Date().toISOString();
+                const storyItem = {
+                  id: Math.random().toString(36).slice(2, 10),
+                  type: isImg ? "image" : "video",
+                  url: item.contentUrl,
+                  videoUrl: item.contentUrl,
+                  thumbnail: item.thumbnailUrl || item.contentUrl,
+                  title: item.name || `${isImg ? "Photo" : "Video"} Story ${isImg ? photos.length + 1 : videos.length + 1}`,
+                  uploadDate: uploadDateStr,
+                  formattedTime: formatRelativeTime(uploadDateStr),
+                  downloadUrl: `/api/story-proxy?url=${encodeURIComponent(item.contentUrl)}&type=${isImg ? "image" : "video"}&username=${username}&num=${isImg ? photos.length + 1 : videos.length + 1}`,
+                };
+
+                if (isImg) {
+                  photos.push(storyItem);
+                } else {
+                  videos.push(storyItem);
+                }
+              }
+            }
+          } catch {}
+        });
+
+        // Method 2: Raw script tag scanning (fallback)
+        if (videos.length === 0 && photos.length === 0) {
+          $("script").each((_, el) => {
+            const content = $(el).html() || "";
+            if (content.includes("contentUrl")) {
+              try {
+                const matches = content.match(/"contentUrl"\s*:\s*"([^"]+)"/g) || [];
+                matches.forEach((match) => {
+                  const mediaUrl = (match as string)
+                    .replace(/"contentUrl"\s*:\s*"/, "")
+                    .replace(/"$/, "");
+                  if (mediaUrl.startsWith("http")) {
+                    const isImg = mediaUrl.includes(".jpg") || mediaUrl.includes(".jpeg") || mediaUrl.includes(".webp");
+                    const uploadDateStr = new Date().toISOString();
+                    const storyItem = {
+                      id: Math.random().toString(36).slice(2, 10),
+                      type: isImg ? "image" : "video",
+                      url: mediaUrl,
+                      videoUrl: mediaUrl,
+                      thumbnail: mediaUrl,
+                      title: `${isImg ? "Photo" : "Video"} Story ${isImg ? photos.length + 1 : videos.length + 1}`,
+                      uploadDate: uploadDateStr,
+                      formattedTime: formatRelativeTime(uploadDateStr),
+                      downloadUrl: `/api/story-proxy?url=${encodeURIComponent(mediaUrl)}&type=${isImg ? "image" : "video"}&username=${username}&num=${isImg ? photos.length + 1 : videos.length + 1}`,
+                    };
+
+                    if (isImg) {
+                      if (!photos.some(p => p.url === mediaUrl)) photos.push(storyItem);
+                    } else {
+                      if (!videos.some(v => v.url === mediaUrl)) videos.push(storyItem);
+                    }
+                  }
+                });
+              } catch {}
+            }
+          });
+        }
+
+        const totalStoriesCount = videos.length + photos.length;
+        if (totalStoriesCount > 0 || profile) {
+          let finalDisplayName = profile?.displayName || (username.charAt(0).toUpperCase() + username.slice(1));
+          finalDisplayName = cleanDisplayName(finalDisplayName);
+          if (!finalDisplayName || finalDisplayName.toLowerCase() === 'snapchat' || finalDisplayName.toLowerCase() === 'snapchat user') {
+            finalDisplayName = username.charAt(0).toUpperCase() + username.slice(1);
+          }
+
+          const avatarUrl = profile?.avatar;
+          const proxiedAvatar = avatarUrl && avatarUrl.startsWith("http")
+            ? `/api/dp-proxy?url=${encodeURIComponent(avatarUrl)}&username=${username}`
+            : `https://app.snapchat.com/web/deeplink/snapcode?username=${username}&type=SVG&bitmoji=enable`;
+
+          const result = {
+            success: true,
+            username: username,
+            displayName: finalDisplayName,
+            uploader: finalDisplayName,
+            profilePicture: proxiedAvatar,
+            thumbnail: proxiedAvatar,
+            stories: [...videos, ...photos],
+            videos,
+            photos,
+            profileUrl: profile?.profileUrl || `https://www.snapchat.com/add/${username}`,
+            stats: {
+              subscribers: profile?.subscribers || 0,
+              stories: totalStoriesCount,
+              highlights: profile?.highlights || 0,
+              spotlights: profile?.spotlights || 0,
+            }
+          };
+
+          const latency = Date.now() - start;
+          addActivityLog("stories", username, "success", latency, `[${toolName}] Scraped ${totalStoriesCount} stories in ${latency}ms.`);
+          return res.json(result);
+        }
+
+        throw new Error("No public stories found");
+      } catch (err: any) {
+        const latency = Date.now() - start;
+        console.error(`[${toolName}] failed for @${username}:`, err.message);
+        addActivityLog("stories", username || "anonymous", "failed", latency, `[${toolName}] Failed: ${err.message}`);
+        return res.status(404).json({ error: `No public stories found for ${isDirectStoryLink ? rawInput : `@${username}`}.` });
+      }
+    }
+
+    // =====================================================
+    // ROUTE: Isolated Story Tools
+    // =====================================================
+    app.post("/api/story-viewer", limiter, async (req, res) => {
+      await handleStoryToolRequest(req, res, "story-viewer");
+    });
+
+    app.post("/api/story-downloader", limiter, async (req, res) => {
+      await handleStoryToolRequest(req, res, "story-downloader");
+    });
+
+    // =====================================================
     // ROUTE: Stories Viewer
     // =====================================================
     app.post("/api/stories", limiter, async (req, res) => {

@@ -79,8 +79,11 @@ export default function HeroSection({ toolId, title, description, placeholder, b
       } else if (toolId === "profile-viewer") {
         endpoint = '/api/profile-viewer';
         body = { username: cleanedInput };
-      } else if (toolId === "story-viewer" || toolId === "story-downloader") {
-        endpoint = '/api/stories';
+      } else if (toolId === "story-viewer") {
+        endpoint = '/api/story-viewer';
+        body = { username: cleanedInput };
+      } else if (toolId === "story-downloader") {
+        endpoint = '/api/story-downloader';
         body = { username: cleanedInput };
       } else if (toolId === "video-downloader") {
         endpoint = '/api/bulk-videos';

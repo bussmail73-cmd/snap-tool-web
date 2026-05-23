@@ -66,10 +66,13 @@ export default function ResultPage() {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [selectedStory, setSelectedStory] = useState<any>(null);
   const [bulkVideoType, setBulkVideoType] = useState<'spotlights' | 'highlights'>('spotlights');
+  const [storyTabType, setStoryTabType] = useState<'videos' | 'photos'>('videos');
   const [videosPerPage] = useState(6);
   const [currentPage, setCurrentPage] = useState(1);
   const [visibleSpotlights, setVisibleSpotlights] = useState(10);
   const [visibleHighlights, setVisibleHighlights] = useState(10);
+  const [visibleStoryVideos, setVisibleStoryVideos] = useState(10);
+  const [visibleStoryPhotos, setVisibleStoryPhotos] = useState(10);
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [downloadingIds, setDownloadingIds] = useState<Record<string, boolean>>({});
 
@@ -687,6 +690,343 @@ For inquiries, visit: ${exportData.websiteUrl}
                               className="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm shadow-md hover:shadow-xl active:scale-95 transition-all cursor-pointer"
                             >
                               Show More ({highlightVideos.length - visibleHighlights} remaining / {highlightVideos.length} total)
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <ToolsGrid />
+      </div>
+    );
+  }
+
+  // Overhauled Story Viewer & Downloader View (Premium Centered Design with Videos & Photos Tabs)
+  if (toolId === 'story-viewer' || toolId === 'story-downloader') {
+    const videoStories = Array.isArray(resultData.videos) ? resultData.videos : [];
+    const photoStories = Array.isArray(resultData.photos) ? resultData.photos : [];
+
+    const videosDisplay = videoStories.slice(0, visibleStoryVideos);
+    const photosDisplay = photoStories.slice(0, visibleStoryPhotos);
+
+    const hasMoreVideos = visibleStoryVideos < videoStories.length;
+    const hasMorePhotos = visibleStoryPhotos < photoStories.length;
+
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] py-12 px-4 sm:px-6 lg:px-8">
+        <Helmet>
+          <title>{resultData?.uploader || resultData?.displayName || 'Snapchat'} - Snapchat Stories | Getinbex</title>
+          <meta name="robots" content="noindex" />
+        </Helmet>
+
+        <div className="max-w-7xl mx-auto px-4 md:px-8">
+          {/* Navigation & Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-wrap items-center justify-center gap-4 mb-10"
+          >
+            <button 
+              onClick={handleGoBack}
+              className="flex items-center justify-center gap-2 bg-gray-900 text-white hover:bg-gray-800 px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-lg hover:shadow-xl active:scale-95 group min-w-[140px]"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              Back
+            </button>
+            
+            <button 
+              onClick={handleGoBack}
+              className="flex items-center justify-center gap-2 bg-white text-gray-900 border-2 border-gray-900 hover:bg-gray-50 px-6 py-3 rounded-2xl font-bold text-sm transition-all shadow-md hover:shadow-lg active:scale-95 min-w-[140px]"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Try Again
+            </button>
+          </motion.div>
+
+          {/* Centered Profile Card */}
+          <div className="flex flex-col items-center justify-center mb-2 mt-1">
+            <div className="text-center flex flex-col items-center gap-3">
+              {resultData.thumbnail && (
+                <div className="w-20 h-20 rounded-full border-4 border-white bg-white overflow-hidden shadow-md flex items-center justify-center">
+                  <img
+                    src={getProxiedUrl(resultData.thumbnail, resultData.username || profileHandle)}
+                    alt={profileDisplayName}
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://app.snapchat.com/web/deeplink/snapcode?username=${profileHandle}&type=SVG&bitmoji=enable`;
+                    }}
+                  />
+                </div>
+              )}
+              <h2 className="text-3xl font-black text-gray-900 tracking-tight">
+                {profileDisplayName}
+              </h2>
+              {profileHandle && (
+                <span className="bg-yellow-100 text-yellow-800 border border-yellow-200 text-sm font-extrabold px-4 py-1.5 rounded-full shadow-sm tracking-wide">
+                  @{profileHandle}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Dotted Line Divider */}
+          <div className="w-full max-w-xl mx-auto my-6 border-b-2 border-dotted border-gray-300" />
+
+          {/* No Stories Found */}
+          {videoStories.length === 0 && photoStories.length === 0 ? (
+            <div className="text-center py-16 bg-white rounded-3xl border border-gray-150 shadow-sm mb-12">
+              <Video className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-600 text-lg mb-2">No active public stories found</p>
+              <p className="text-gray-500">This profile currently has <strong>0</strong> active public stories.</p>
+            </div>
+          ) : (
+            <div className="space-y-12">
+              {/* Stats Counters */}
+              <div className="text-center font-bold text-gray-500 text-sm md:text-base mb-6">
+                {videoStories.length} Story Videos • {photoStories.length} Story Photos
+              </div>
+
+              {/* Tab Selector Buttons */}
+              <div className="flex justify-center items-center gap-4 mb-10">
+                <button
+                  onClick={() => setStoryTabType('videos')}
+                  className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-sm cursor-pointer ${
+                    storyTabType === 'videos'
+                      ? 'bg-yellow-300 text-black border-2 border-yellow-400 shadow-md font-extrabold'
+                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  Videos
+                </button>
+                <button
+                  onClick={() => setStoryTabType('photos')}
+                  className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 shadow-sm cursor-pointer ${
+                    storyTabType === 'photos'
+                      ? 'bg-yellow-300 text-black border-2 border-yellow-400 shadow-md font-extrabold'
+                      : 'bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  Photos
+                </button>
+              </div>
+
+              {/* Media Grid Section */}
+              <div>
+                {storyTabType === 'videos' ? (
+                  <div>
+                    <div className="flex items-center justify-between mb-8 pb-3 border-b border-gray-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3.5 h-7 rounded-full bg-gradient-to-b from-yellow-400 to-amber-500" />
+                        <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Story Videos</h2>
+                      </div>
+                      <span className="bg-gray-100 text-gray-600 font-bold px-3.5 py-1.5 rounded-full text-xs">
+                        {videoStories.length} Available
+                      </span>
+                    </div>
+
+                    {videoStories.length === 0 ? (
+                      <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-inner">
+                        <Video className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500 font-semibold">No active video stories found for this profile</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-center">
+                          {videosDisplay.map((video: any, index: number) => (
+                            <div key={`story-video-${video.id || index}`} className="bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col group max-w-[300px] mx-auto w-full">
+                              {/* Grid portrait preview */}
+                              <div className="relative bg-black aspect-[9/16] overflow-hidden rounded-[1.8rem] m-2 shadow-inner">
+                                {activeVideoId === video.id ? (
+                                  <video
+                                    src={video.videoUrl?.startsWith('http') && !video.videoUrl.includes('/api/') ? `/api/proxy?url=${encodeURIComponent(video.videoUrl)}` : video.videoUrl || video.url}
+                                    controls
+                                    autoPlay
+                                    playsInline
+                                    className="w-full h-full object-cover rounded-[1.8rem]"
+                                  />
+                                ) : (
+                                  <div 
+                                    onClick={() => setActiveVideoId(video.id)}
+                                    className="relative w-full h-full cursor-pointer group"
+                                  >
+                                    <img
+                                      src={getProxiedUrl(video.thumbnail || video.url, resultData.username || profileHandle)}
+                                      alt={video.title}
+                                      className="w-full h-full object-cover rounded-[1.8rem] group-hover:scale-105 transition-transform duration-500"
+                                      referrerPolicy="no-referrer"
+                                      loading="lazy"
+                                      onError={(e) => {
+                                        (e.target as HTMLImageElement).src = `https://via.placeholder.com/200x360?text=${encodeURIComponent(video.title || 'Video')}`;
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/35 group-hover:bg-black/45 transition-colors flex items-center justify-center rounded-[1.8rem]">
+                                      <div className="w-12 h-12 rounded-full bg-white/95 text-black shadow-2xl flex items-center justify-center transform group-hover:scale-110 active:scale-90 transition-all duration-300">
+                                        <Play className="w-6 h-6 fill-black translate-x-0.5" />
+                                      </div>
+                                    </div>
+                                    
+                                    {/* Exact upload time badge requested by user */}
+                                    {video.formattedTime && (
+                                      <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-black px-2.5 py-1 rounded-md flex items-center gap-1">
+                                        <Clock className="w-3 h-3 text-yellow-300" />
+                                        {video.formattedTime}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="p-4 pt-1 flex flex-col justify-between flex-1">
+                                <h3 className="font-bold text-gray-800 text-xs mb-3 line-clamp-2 h-8 leading-snug">
+                                  {video.title || `Story Video`}
+                                </h3>
+                                <button
+                                  onClick={(e) => handleDownload(
+                                    video.id,
+                                    video.downloadUrl || `/api/proxy?url=${encodeURIComponent(video.videoUrl)}&filename=${encodeURIComponent(video.title || 'story')}.mp4`,
+                                    `${(video.title || `story-${index}`).replace(/[^a-z0-9]/gi, '_')}.mp4`,
+                                    e
+                                  )}
+                                  disabled={downloadingIds[video.id]}
+                                  className={`w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all shadow-sm active:scale-[0.98] cursor-pointer hover:shadow-md text-center select-none ${
+                                    downloadingIds[video.id]
+                                      ? 'bg-amber-200 text-amber-800 cursor-not-allowed'
+                                      : 'bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black'
+                                  }`}
+                                >
+                                  {downloadingIds[video.id] ? (
+                                    <>
+                                      <svg className="animate-spin h-3.5 w-3.5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                      </svg>
+                                      Downloading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Download className="w-4 h-4" />
+                                      Download Video
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {hasMoreVideos && (
+                          <div className="flex justify-center mt-10">
+                            <button
+                              onClick={() => setVisibleStoryVideos(prev => prev + 10)}
+                              className="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm shadow-md hover:shadow-xl active:scale-95 transition-all cursor-pointer"
+                            >
+                              Show More ({videoStories.length - visibleStoryVideos} remaining / {videoStories.length} total)
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-between mb-8 pb-3 border-b border-gray-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-3.5 h-7 rounded-full bg-gradient-to-b from-blue-500 to-indigo-600" />
+                        <h2 className="text-xl font-extrabold text-gray-900 tracking-tight">Story Photos</h2>
+                      </div>
+                      <span className="bg-gray-100 text-gray-600 font-bold px-3.5 py-1.5 rounded-full text-xs">
+                        {photoStories.length} Available
+                      </span>
+                    </div>
+
+                    {photoStories.length === 0 ? (
+                      <div className="text-center py-12 bg-white rounded-2xl border border-gray-100 shadow-inner">
+                        <Video className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500 font-semibold">No active photo stories found for this profile</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-center">
+                          {photosDisplay.map((photo: any, index: number) => (
+                            <div key={`story-photo-${photo.id || index}`} className="bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col group max-w-[300px] mx-auto w-full">
+                              {/* Grid portrait preview */}
+                              <div className="relative bg-black aspect-[9/16] overflow-hidden rounded-[1.8rem] m-2 shadow-inner">
+                                <div className="relative w-full h-full">
+                                  <img
+                                    src={getProxiedUrl(photo.thumbnail || photo.url, resultData.username || profileHandle)}
+                                    alt={photo.title}
+                                    className="w-full h-full object-cover rounded-[1.8rem] hover:scale-105 transition-transform duration-500"
+                                    referrerPolicy="no-referrer"
+                                    loading="lazy"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = `https://via.placeholder.com/200x360?text=${encodeURIComponent(photo.title || 'Photo')}`;
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 bg-black/10 rounded-[1.8rem]" />
+                                  
+                                  {/* Exact upload time badge requested by user */}
+                                  {photo.formattedTime && (
+                                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-black px-2.5 py-1 rounded-md flex items-center gap-1">
+                                      <Clock className="w-3 h-3 text-yellow-300" />
+                                      {photo.formattedTime}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="p-4 pt-1 flex flex-col justify-between flex-1">
+                                <h3 className="font-bold text-gray-800 text-xs mb-3 line-clamp-2 h-8 leading-snug">
+                                  {photo.title || `Story Photo`}
+                                </h3>
+                                <button
+                                  onClick={(e) => handleDownload(
+                                    photo.id,
+                                    photo.downloadUrl || `/api/story-proxy?url=${encodeURIComponent(photo.url)}&type=image&username=${resultData.username || 'story'}&num=${index + 1}`,
+                                    `${(photo.title || `story-${index}`).replace(/[^a-z0-9]/gi, '_')}.jpg`,
+                                    e
+                                  )}
+                                  disabled={downloadingIds[photo.id]}
+                                  className={`w-full flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl font-extrabold text-xs transition-all shadow-sm active:scale-[0.98] cursor-pointer hover:shadow-md text-center select-none ${
+                                    downloadingIds[photo.id]
+                                      ? 'bg-amber-200 text-amber-800 cursor-not-allowed'
+                                      : 'bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-black'
+                                  }`}
+                                >
+                                  {downloadingIds[photo.id] ? (
+                                    <>
+                                      <svg className="animate-spin h-3.5 w-3.5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                      </svg>
+                                      Downloading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Download className="w-4 h-4" />
+                                      Download Photo
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {hasMorePhotos && (
+                          <div className="flex justify-center mt-10">
+                            <button
+                              onClick={() => setVisibleStoryPhotos(prev => prev + 10)}
+                              className="px-8 py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black text-sm shadow-md hover:shadow-xl active:scale-95 transition-all cursor-pointer"
+                            >
+                              Show More ({photoStories.length - visibleStoryPhotos} remaining / {photoStories.length} total)
                             </button>
                           </div>
                         )}
