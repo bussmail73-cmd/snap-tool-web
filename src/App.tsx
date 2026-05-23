@@ -14,6 +14,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import ResultPage from "./components/ResultPage";
 import Dashboard from "./components/Dashboard";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { LOGO_BASE64 } from "./components/logo";
 import { TOOLS, Tool } from "./constants";
 import { Mail } from "lucide-react";
 
@@ -392,7 +393,7 @@ function Layout({ children }: { children: React.ReactNode }) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <img src="/Logo.png" alt="Getinbex Official Logo - Anonymous Snapchat Tools" className="w-8 h-8 object-contain" />
+                <img src={LOGO_BASE64} alt="Getinbex Official Logo - Anonymous Snapchat Tools" className="w-8 h-8 object-contain" />
                 <span className="font-bold text-xl">Getinbex</span>
               </div>
               <p className="text-gray-500 text-sm max-w-sm">

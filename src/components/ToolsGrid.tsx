@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { TOOLS } from "../constants";
+import { SNAPCHAT_BASE64 } from "./logo";
 
 function ToolsGrid() {
   return (
@@ -9,7 +10,7 @@ function ToolsGrid() {
         <h2>Our Tools</h2>
         <p>Explore our professional suite of Snapchat utility tools designed for a seamless and private experience.</p>
         <div className="home-tools-branding">
-          <img src="/snapchat.png" alt="Snapchat official social media logo - the original platform for all these tools" className="home-tools-branding-image" />
+          <img src={SNAPCHAT_BASE64} alt="Snapchat official social media logo - the original platform for all these tools" className="home-tools-branding-image" />
           <span className="home-tools-branding-text">Snapchat</span>
         </div>
       </div>

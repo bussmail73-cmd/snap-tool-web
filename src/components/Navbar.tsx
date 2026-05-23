@@ -7,6 +7,7 @@ import {
   X
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { LOGO_BASE64 } from "./logo";
 import { TOOLS } from "../constants";
 
 function Navbar() {
@@ -37,7 +38,7 @@ function Navbar() {
           {/* Logo & Brand */}
           <Link to="/" onClick={scrollToTop} className="flex items-center gap-2 group shrink-0">
             <div className="w-8 h-8 md:w-9 md:h-9 shrink-0">
-              <img src="/Logo.png" alt="Getinbex Official Logo" className="w-full h-full object-contain" />
+              <img src={LOGO_BASE64} alt="Getinbex Official Logo" className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col">
               <span className="text-[13px] md:text-sm font-bold text-gray-900 leading-tight">Getinbex</span>
