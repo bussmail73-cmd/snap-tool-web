@@ -2414,11 +2414,13 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid URL format. Please provide a valid Snapchat video or spotlight link." });
       }
 
+      // 1. Resolve redirect/short link and extract URL with spaces intact first!
+      url = await resolveSnapchatUrl(url);
+
+      // 2. Perform space stripping and cleanup on the resolved URL
       url = url.trim();
       url = url.replace(/\s+/g, "");
       url = url.replace(/[\)\]\.,;]+$/g, "");
-
-      url = await resolveSnapchatUrl(url);
 
       if (!/^https?:\/\//i.test(url) && /^(?:www\.)?(?:snapchat\.com|t\.snapchat\.com|snap\.com)/i.test(url)) {
         url = `https://${url}`;
