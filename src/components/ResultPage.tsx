@@ -4,7 +4,8 @@ import {
   Download, Play, Pause, Volume2, VolumeX, 
   RotateCcw, RotateCw, ChevronDown, Check, 
   ArrowLeft, User, ShieldCheck, CheckCircle2,
-  Video, ExternalLink, Lock, Users, Grid3x3, Star, BarChart3, Search, TrendingUp, FileJson, File
+  Video, ExternalLink, Lock, Users, Grid3x3, Star, BarChart3, Search, TrendingUp, FileJson, File,
+  Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Helmet } from "react-helmet-async";
@@ -23,6 +24,8 @@ interface VideoData {
   username?: string;
   displayName?: string;
   stories?: any[];
+  videos?: any[];
+  photos?: any[];
   profileUrl?: string;
   stats?: {
     subscribers?: number;
@@ -514,7 +517,7 @@ For inquiries, visit: ${exportData.websiteUrl}
                                       alt={video.title}
                                       className="w-full h-full object-cover rounded-[1.8rem] group-hover:scale-105 transition-transform duration-500"
                                       referrerPolicy="no-referrer"
-                                      loading="lazy"
+                                      loading={index < 4 ? "eager" : "lazy"}
                                       onError={(e) => {
                                         (e.target as HTMLImageElement).src = `https://via.placeholder.com/200x360?text=${encodeURIComponent(video.title || 'Video')}`;
                                       }}
@@ -626,7 +629,7 @@ For inquiries, visit: ${exportData.websiteUrl}
                                       alt={video.title}
                                       className="w-full h-full object-cover rounded-[1.8rem] group-hover:scale-105 transition-transform duration-500"
                                       referrerPolicy="no-referrer"
-                                      loading="lazy"
+                                      loading={index < 4 ? "eager" : "lazy"}
                                       onError={(e) => {
                                         (e.target as HTMLImageElement).src = `https://via.placeholder.com/200x360?text=${encodeURIComponent(video.title || 'Video')}`;
                                       }}
@@ -862,7 +865,7 @@ For inquiries, visit: ${exportData.websiteUrl}
                                       alt={video.title}
                                       className="w-full h-full object-cover rounded-[1.8rem] group-hover:scale-105 transition-transform duration-500"
                                       referrerPolicy="no-referrer"
-                                      loading="lazy"
+                                      loading={index < 4 ? "eager" : "lazy"}
                                       onError={(e) => {
                                         (e.target as HTMLImageElement).src = `https://via.placeholder.com/200x360?text=${encodeURIComponent(video.title || 'Video')}`;
                                       }}
@@ -965,7 +968,7 @@ For inquiries, visit: ${exportData.websiteUrl}
                                     alt={photo.title}
                                     className="w-full h-full object-cover rounded-[1.8rem] hover:scale-105 transition-transform duration-500"
                                     referrerPolicy="no-referrer"
-                                    loading="lazy"
+                                    loading={index < 4 ? "eager" : "lazy"}
                                     onError={(e) => {
                                       (e.target as HTMLImageElement).src = `https://via.placeholder.com/200x360?text=${encodeURIComponent(photo.title || 'Photo')}`;
                                     }}

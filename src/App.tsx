@@ -13,6 +13,7 @@ import Home from "./components/Home";
 import ScrollToTop from "./components/ScrollToTop";
 import ResultPage from "./components/ResultPage";
 import Dashboard from "./components/Dashboard";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { TOOLS, Tool } from "./constants";
 import { Mail } from "lucide-react";
 
@@ -429,78 +430,80 @@ function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <HelmetProvider>
-      <Router>
-        <ScrollToTop />
-        <Layout>
-          <Routes>
-            <Route 
-              path="/" 
-              element={
-                <>
-                  <Helmet>
-                    <title>Getinbex | 100% Free Anonymous Snapchat Tools - View, Download & Explore</title>
-                    <meta name="description" content="Ultimate toolset for Snapchat: View stories anonymously, download spotlight videos, lookup profiles and search usernames without watermark or registration. 100% free, no account needed." />
-                    <link rel="canonical" href="https://getinbex.com" />
-                    <meta property="og:title" content="Getinbex | 100% Free Anonymous Snapchat Tools" />
-                    <meta property="og:description" content="View stories, download spotlights, lookup profiles & search Snapchat users - all 100% anonymously and for free" />
-                    <meta property="og:url" content="https://getinbex.com" />
-                    <meta name="twitter:title" content="Getinbex | 100% Free Anonymous Snapchat Tools" />
-                    <meta name="twitter:description" content="View stories, download spotlights, lookup profiles & search Snapchat users - all 100% anonymously and for free" />
-                    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-                    <script type="application/ld+json">
-                    {JSON.stringify({
-                      "@context": "https://schema.org",
-                      "@type": "WebSite",
-                      "name": "Getinbex",
-                      "url": "https://getinbex.com",
-                      "description": "Ultimate toolset for Snapchat: View stories, download spotlights, lookup profiles, search users - all anonymously and for free",
-                      "potentialAction": {
-                        "@type": "SearchAction",
-                        "target": {
-                          "@type": "EntryPoint",
-                          "urlTemplate": "https://getinbex.com/profile-viewer?search={search_term_string}"
-                        },
-                        "query-input": "required name=search_term_string"
-                      }
-                    })}
-                    </script>
-                    <script type="application/ld+json">
-                    {JSON.stringify({
-                      "@context": "https://schema.org",
-                      "@type": "BreadcrumbList",
-                      "itemListElement": [
-                        {
-                          "@type": "ListItem",
-                          "position": 1,
-                          "name": "Home",
-                          "item": "https://getinbex.com"
-                        }
-                      ]
-                    })}
-                    </script>
-                  </Helmet>
-                  <Home />
-                </>
-              } 
-            />
-            <Route path="/result" element={<ResultPage />} />
-            {TOOLS.map((tool) => (
+      <ErrorBoundary>
+        <Router>
+          <ScrollToTop />
+          <Layout>
+            <Routes>
               <Route 
-                // @ts-ignore - RouteProps key issue
-                key={tool.id}
-                path={tool.path} 
-                element={<ToolPageRoute tool={tool} />}
+                path="/" 
+                element={
+                  <>
+                    <Helmet>
+                      <title>Getinbex | 100% Free Anonymous Snapchat Tools - View, Download & Explore</title>
+                      <meta name="description" content="Ultimate toolset for Snapchat: View stories anonymously, download spotlight videos, lookup profiles and search usernames without watermark or registration. 100% free, no account needed." />
+                      <link rel="canonical" href="https://getinbex.com" />
+                      <meta property="og:title" content="Getinbex | 100% Free Anonymous Snapchat Tools" />
+                      <meta property="og:description" content="View stories, download spotlights, lookup profiles & search Snapchat users - all 100% anonymously and for free" />
+                      <meta property="og:url" content="https://getinbex.com" />
+                      <meta name="twitter:title" content="Getinbex | 100% Free Anonymous Snapchat Tools" />
+                      <meta name="twitter:description" content="View stories, download spotlights, lookup profiles & search Snapchat users - all 100% anonymously and for free" />
+                      <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+                      <script type="application/ld+json">
+                      {JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "WebSite",
+                        "name": "Getinbex",
+                        "url": "https://getinbex.com",
+                        "description": "Ultimate toolset for Snapchat: View stories, download spotlights, lookup profiles, search users - all anonymously and for free",
+                        "potentialAction": {
+                          "@type": "SearchAction",
+                          "target": {
+                            "@type": "EntryPoint",
+                            "urlTemplate": "https://getinbex.com/profile-viewer?search={search_term_string}"
+                          },
+                          "query-input": "required name=search_term_string"
+                        }
+                      })}
+                      </script>
+                      <script type="application/ld+json">
+                      {JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "BreadcrumbList",
+                        "itemListElement": [
+                          {
+                            "@type": "ListItem",
+                            "position": 1,
+                            "name": "Home",
+                            "item": "https://getinbex.com"
+                          }
+                        ]
+                      })}
+                      </script>
+                    </Helmet>
+                    <Home />
+                  </>
+                } 
               />
-            ))}
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/faq" element={<FAQ />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Routes>
-        </Layout>
-      </Router>
+              <Route path="/result" element={<ResultPage />} />
+              {TOOLS.map((tool) => (
+                <Route 
+                  // @ts-ignore - RouteProps key issue
+                  key={tool.id}
+                  path={tool.path} 
+                  element={<ToolPageRoute tool={tool} />}
+                />
+              ))}
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+            </Routes>
+          </Layout>
+        </Router>
+      </ErrorBoundary>
     </HelmetProvider>
   );
 }

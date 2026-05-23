@@ -1536,12 +1536,12 @@ async function startServer() {
         .split(/[?#]/)[0]
         .trim();
 
-      let match = normalized.match(/^(?:snapchat|snap)\.com\/(?:add\/)??([a-zA-Z0-9._-]{3,30})\/spotlight\//i);
+      let match = normalized.match(/^(?:snapchat|snap)\.com\/(?:add\/)??([a-zA-Z0-9._-]{3,30})\/(?:spotlight|p)\//i);
       if (match) {
         return match[1].toLowerCase();
       }
 
-      match = normalized.match(/^(?:snapchat|snap)\.com\/@([a-zA-Z0-9._-]{3,30})\/spotlight\//i);
+      match = normalized.match(/^(?:snapchat|snap)\.com\/@([a-zA-Z0-9._-]{3,30})\/(?:spotlight|p)\//i);
       if (match) {
         return match[1].toLowerCase();
       }
@@ -2328,7 +2328,7 @@ async function startServer() {
 
       url = await resolveSnapchatUrl(url);
 
-      if (!/^https?:\/\//i.test(url) && /^(?:www\.)?(?:snapchat\.com|t\.snapchat\.com)/i.test(url)) {
+      if (!/^https?:\/\//i.test(url) && /^(?:www\.)?(?:snapchat\.com|t\.snapchat\.com|snap\.com)/i.test(url)) {
         url = `https://${url}`;
       }
 
@@ -2342,7 +2342,7 @@ async function startServer() {
       }
 
       // Validate it's a Snapchat URL
-      if (!url.includes("snapchat.com") && !url.includes("t.snapchat.com")) {
+      if (!url.includes("snapchat.com") && !url.includes("t.snapchat.com") && !url.includes("snap.com")) {
         return res.status(400).json({ error: "Invalid URL. Please provide a valid Snapchat video or spotlight link." });
       }
 
