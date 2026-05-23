@@ -446,6 +446,76 @@ function extractAllCreators(obj: any, results: any[] = []): any[] {
   return results;
 }
 
+// Deep scanner to extract any Snapchat CDN video URLs recursively
+function extractAllVideoUrls(obj: any, results: { url: string; width?: number; height?: number }[] = []): any[] {
+  if (!obj || typeof obj !== 'object') return results;
+
+  if (!Array.isArray(obj)) {
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+      const val = obj[key];
+      if (typeof val === 'string' && val.startsWith('http')) {
+        const isCdn = val.includes('sc-cdn.net') || val.includes('snapchat.com');
+        const isVideo = val.includes('.mp4') || key.toLowerCase().includes('videourl') || key.toLowerCase().includes('contenturl') || key.toLowerCase().includes('mediaurl') || key.toLowerCase().includes('snapurl') || key.toLowerCase().includes('streamurl');
+        
+        if (isCdn && isVideo) {
+          if (!results.some(r => r.url === val)) {
+            results.push({
+              url: val,
+              width: obj.width || obj.videoWidth || undefined,
+              height: obj.height || obj.videoHeight || undefined
+            });
+          }
+        }
+      }
+    }
+  }
+
+  const keys = Array.isArray(obj) ? obj.keys() : Object.keys(obj);
+  for (const key of keys) {
+    try {
+      const child = obj[key];
+      if (child && typeof child === 'object') {
+        extractAllVideoUrls(child, results);
+      }
+    } catch {}
+  }
+  return results;
+}
+
+// Deep scanner to extract any Snapchat CDN thumbnail/image URLs recursively
+function extractAllImages(obj: any, results: string[] = []): string[] {
+  if (!obj || typeof obj !== 'object') return results;
+
+  if (!Array.isArray(obj)) {
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+      const val = obj[key];
+      if (typeof val === 'string' && val.startsWith('http')) {
+        const isCdn = val.includes('sc-cdn.net') || val.includes('snapchat.com');
+        const isImage = key.toLowerCase().includes('thumbnail') || key.toLowerCase().includes('image') || key.toLowerCase().includes('poster') || key.toLowerCase().includes('avatar') || key.toLowerCase().includes('snapcode');
+        
+        if (isCdn && isImage) {
+          if (!results.includes(val)) {
+            results.push(val);
+          }
+        }
+      }
+    }
+  }
+
+  const keys = Array.isArray(obj) ? obj.keys() : Object.keys(obj);
+  for (const key of keys) {
+    try {
+      const child = obj[key];
+      if (child && typeof child === 'object') {
+        extractAllImages(child, results);
+      }
+    } catch {}
+  }
+  return results;
+}
+
 // Extract hashtags list from description text or caption
 function extractHashtagsFromText(text: string): string[] {
   if (!text) return [];
@@ -1977,6 +2047,28 @@ async function startServer() {
                   if (bestMatch) {
                     if (!username) username = bestMatch.username;
                     if (!displayName) displayName = bestMatch.displayName;
+                  }
+                }
+              }
+
+              // 3.5. Recursive deep search for video and image URLs if direct extraction failed
+              if (!videoUrl) {
+                const videoCandidates: any[] = [];
+                extractAllVideoUrls(nextData, videoCandidates);
+                if (videoCandidates.length > 0) {
+                  const bestVideo = videoCandidates.find(v => v.url.includes('.mp4')) || videoCandidates[0];
+                  if (bestVideo) {
+                    videoUrl = bestVideo.url;
+                  }
+                }
+              }
+              if (!thumbnail) {
+                const imageCandidates: any[] = [];
+                extractAllImages(nextData, imageCandidates);
+                if (imageCandidates.length > 0) {
+                  const bestImage = imageCandidates.find(img => !img.includes('snapcode') && !img.includes('deeplink')) || imageCandidates[0];
+                  if (bestImage) {
+                    thumbnail = bestImage;
                   }
                 }
               }
