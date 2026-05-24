@@ -124,6 +124,8 @@ export default function HeroSection({ toolId, title, description, placeholder, b
     }
   }, [suggestedToolId, navigate]);
 
+  const [pasteSuccess, setPasteSuccess] = useState(false);
+
   const handlePaste = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     
@@ -132,22 +134,48 @@ export default function HeroSection({ toolId, title, description, placeholder, b
       inputRef.current.focus();
     }
 
+    // Check if Clipboard API is available (requires HTTPS or localhost)
     if (!navigator.clipboard || !navigator.clipboard.readText) {
       setHasError(true);
-      setErrorMsg("Browser blocked clipboard access. Since this is an insecure HTTP connection, please paste manually using Ctrl+V or secure your site with HTTPS!");
+      setErrorMsg("⚠️ Paste blocked: your browser requires a secure HTTPS connection for clipboard access. Please paste manually using Ctrl+V (keyboard shortcut).");
       return;
     }
 
     try {
+      // Check clipboard read permission first if available
+      if (navigator.permissions) {
+        try {
+          const permResult = await navigator.permissions.query({ name: 'clipboard-read' as PermissionName });
+          if (permResult.state === 'denied') {
+            setHasError(true);
+            setErrorMsg("Clipboard permission denied by browser. Please paste manually using Ctrl+V.");
+            return;
+          }
+        } catch {
+          // permissions.query may not support clipboard-read in some browsers, continue
+        }
+      }
+
       const text = await navigator.clipboard.readText();
-      if (text) {
-        setInputValue(text);
+      if (text && text.trim()) {
+        setInputValue(text.trim());
         setHasError(false);
         setErrorMsg("");
+        // Show brief success indicator
+        setPasteSuccess(true);
+        setTimeout(() => setPasteSuccess(false), 2000);
+      } else {
+        setHasError(true);
+        setErrorMsg("Clipboard appears to be empty. Please copy a Snapchat link first, then click Paste.");
       }
-    } catch (err) {
-      setHasError(true);
-      setErrorMsg("Clipboard access denied. Please allow clipboard permissions, paste manually using Ctrl+V, or access the site via secure HTTPS!");
+    } catch (err: any) {
+      if (err?.name === 'NotAllowedError') {
+        setHasError(true);
+        setErrorMsg("Clipboard access was denied. Please click 'Allow' when your browser asks for clipboard permission, or paste manually using Ctrl+V.");
+      } else {
+        setHasError(true);
+        setErrorMsg("Could not read clipboard. Please paste manually using Ctrl+V.");
+      }
     }
   }, []);
   const renderTitle = useMemo(() => {
