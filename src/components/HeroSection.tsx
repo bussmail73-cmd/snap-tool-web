@@ -133,15 +133,21 @@ export default function HeroSection({ toolId, title, description, placeholder, b
     }
 
     if (!navigator.clipboard || !navigator.clipboard.readText) {
+      setHasError(true);
+      setErrorMsg("Browser blocked clipboard access. Since this is an insecure HTTP connection, please paste manually using Ctrl+V or secure your site with HTTPS!");
       return;
     }
 
     try {
       const text = await navigator.clipboard.readText();
-      if (text) setInputValue(text);
+      if (text) {
+        setInputValue(text);
+        setHasError(false);
+        setErrorMsg("");
+      }
     } catch (err) {
-      // If blocked by permissions or iframe policy, we don't crash
-      // The input is already focused, so user can just Ctrl+V
+      setHasError(true);
+      setErrorMsg("Clipboard access denied. Please allow clipboard permissions, paste manually using Ctrl+V, or access the site via secure HTTPS!");
     }
   }, []);
   const renderTitle = useMemo(() => {
