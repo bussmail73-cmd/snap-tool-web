@@ -38,6 +38,7 @@ export default function HeroSection({ toolId, title, description, placeholder, b
   // Reset state when switching tools
   useEffect(() => {
     setInputValue("");
+    setIsLoading(false);
     setHasError(false);
     setErrorMsg("");
     setSuggestedToolId(null);

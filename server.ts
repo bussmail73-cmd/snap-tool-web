@@ -1181,7 +1181,49 @@ async function startServer() {
         const videos: any[] = [];
         const photos: any[] = [];
 
-        // Method 1: JSON-LD structured data (most reliable)
+        // Method 0: Next.js __NEXT_DATA__ snapList parsing (Most accurate for actual 24h stories!)
+        try {
+          const nextDataScript = $('script#__NEXT_DATA__').html();
+          if (nextDataScript) {
+            const nextData = JSON.parse(nextDataScript.trim());
+            const pageProps = nextData.props?.pageProps;
+            if (pageProps && pageProps.story && Array.isArray(pageProps.story.snapList)) {
+              pageProps.story.snapList.forEach((snap: any, idx: number) => {
+                const mediaUrl = snap.snapUrls?.mediaUrl;
+                if (mediaUrl) {
+                  const isImg = !mediaUrl.includes('.mp4') && 
+                    (mediaUrl.includes('.jpg') || mediaUrl.includes('.jpeg') || mediaUrl.includes('.png') || mediaUrl.includes('f=preview') || (snap.mediaType === 0));
+                  
+                  const timestamp = snap.timestampInSec?.value 
+                    ? new Date(Number(snap.timestampInSec.value) * 1000).toISOString() 
+                    : new Date().toISOString();
+
+                  const storyItem = {
+                    id: snap.snapId || `${username}_story_${idx}`,
+                    type: isImg ? "image" : "video",
+                    url: mediaUrl,
+                    videoUrl: mediaUrl,
+                    thumbnail: snap.snapUrls?.mediaPreviewUrl?.value || mediaUrl,
+                    title: `Story Snap ${idx + 1}`,
+                    uploadDate: timestamp,
+                    formattedTime: formatRelativeTime(timestamp),
+                    downloadUrl: `/api/story-proxy?url=${encodeURIComponent(mediaUrl)}&type=${isImg ? "image" : "video"}&username=${username}&num=${idx + 1}`
+                  };
+
+                  if (isImg) {
+                    photos.push(storyItem);
+                  } else {
+                    videos.push(storyItem);
+                  }
+                }
+              });
+            }
+          }
+        } catch (nextErr: any) {
+          console.warn(`[Story Scraper] NextJS snapList parsing failed/no stories: ${nextErr.message}`);
+        }
+
+        // Method 1: JSON-LD structured data (most reliable fallback for photos)
         $('script[type="application/ld+json"]').each((_, el) => {
           const rawJson = ($(el).html() || "").trim();
           if (!rawJson) return;
@@ -1191,6 +1233,10 @@ async function startServer() {
             for (const item of items) {
               if (item.contentUrl) {
                 const isImg = item["@type"] === "ImageObject";
+                // Block Spotlight VideoObject from polluting Story tools
+                if (!isImg && item["@type"] === "VideoObject") {
+                  continue;
+                }
                 const uploadDateStr = item.uploadDate || new Date().toISOString();
                 const storyItem = {
                   id: Math.random().toString(36).slice(2, 10),
@@ -1214,7 +1260,7 @@ async function startServer() {
           } catch {}
         });
 
-        // Method 2: Raw script tag scanning (fallback)
+        // Method 2: Raw script tag scanning (fallback for photo snaps only to prevent Spotlight leak)
         if (videos.length === 0 && photos.length === 0) {
           $("script").each((_, el) => {
             const content = $(el).html() || "";
@@ -1227,23 +1273,20 @@ async function startServer() {
                     .replace(/"$/, "");
                   if (mediaUrl.startsWith("http")) {
                     const isImg = mediaUrl.includes(".jpg") || mediaUrl.includes(".jpeg") || mediaUrl.includes(".webp");
-                    const uploadDateStr = new Date().toISOString();
-                    const storyItem = {
-                      id: Math.random().toString(36).slice(2, 10),
-                      type: isImg ? "image" : "video",
-                      url: mediaUrl,
-                      videoUrl: mediaUrl,
-                      thumbnail: mediaUrl,
-                      title: `${isImg ? "Photo" : "Video"} Story ${isImg ? photos.length + 1 : videos.length + 1}`,
-                      uploadDate: uploadDateStr,
-                      formattedTime: formatRelativeTime(uploadDateStr),
-                      downloadUrl: `/api/story-proxy?url=${encodeURIComponent(mediaUrl)}&type=${isImg ? "image" : "video"}&username=${username}&num=${isImg ? photos.length + 1 : videos.length + 1}`,
-                    };
-
                     if (isImg) {
+                      const uploadDateStr = new Date().toISOString();
+                      const storyItem = {
+                        id: Math.random().toString(36).slice(2, 10),
+                        type: "image",
+                        url: mediaUrl,
+                        videoUrl: mediaUrl,
+                        thumbnail: mediaUrl,
+                        title: `Photo Story ${photos.length + 1}`,
+                        uploadDate: uploadDateStr,
+                        formattedTime: formatRelativeTime(uploadDateStr),
+                        downloadUrl: `/api/story-proxy?url=${encodeURIComponent(mediaUrl)}&type=image&username=${username}&num=${photos.length + 1}`,
+                      };
                       if (!photos.some(p => p.url === mediaUrl)) photos.push(storyItem);
-                    } else {
-                      if (!videos.some(v => v.url === mediaUrl)) videos.push(storyItem);
                     }
                   }
                 });
@@ -1438,17 +1481,55 @@ async function startServer() {
         const $ = pageData.$;
         const stories: any[] = [];
 
-        // Method 1: JSON-LD structured data (most reliable)
+        // Method 0: Next.js __NEXT_DATA__ snapList parsing (Most accurate for actual 24h stories!)
+        try {
+          const nextDataScript = $('script#__NEXT_DATA__').html();
+          if (nextDataScript) {
+            const nextData = JSON.parse(nextDataScript.trim());
+            const pageProps = nextData.props?.pageProps;
+            if (pageProps && pageProps.story && Array.isArray(pageProps.story.snapList)) {
+              pageProps.story.snapList.forEach((snap: any, idx: number) => {
+                const mediaUrl = snap.snapUrls?.mediaUrl;
+                if (mediaUrl) {
+                  const isImg = !mediaUrl.includes('.mp4') && 
+                    (mediaUrl.includes('.jpg') || mediaUrl.includes('.jpeg') || mediaUrl.includes('.png') || mediaUrl.includes('f=preview') || (snap.mediaType === 0));
+                  
+                  const timestamp = snap.timestampInSec?.value 
+                    ? new Date(Number(snap.timestampInSec.value) * 1000).toISOString() 
+                    : new Date().toISOString();
+
+                  stories.push({
+                    id: snap.snapId || `${username}_story_${idx}`,
+                    type: isImg ? "image" : "video",
+                    url: mediaUrl,
+                    thumbnail: snap.snapUrls?.mediaPreviewUrl?.value || mediaUrl,
+                    title: `Story Snap ${idx + 1}`,
+                    uploadDate: timestamp,
+                    formattedTime: formatRelativeTime(timestamp),
+                    downloadUrl: `/api/story-proxy?url=${encodeURIComponent(mediaUrl)}&type=${isImg ? "image" : "video"}&username=${username}&num=${idx + 1}`
+                  });
+                }
+              });
+            }
+          }
+        } catch (nextErr: any) {
+          console.warn(`[Stories Route] NextJS snapList parsing failed/no stories: ${nextErr.message}`);
+        }
+
+        // Method 1: JSON-LD structured data (most reliable fallback for photos)
         $('script[type="application/ld+json"]').each((_, el) => {
           const rawJson = ($(el).html() || "").trim();
           if (!rawJson) return;
           try {
             const json = JSON.parse(rawJson);
-            const items =
-              json["@graph"] || (Array.isArray(json) ? json : [json]);
+            const items = json["@graph"] || (Array.isArray(json) ? json : [json]);
             for (const item of items) {
               if (item.contentUrl) {
                 const isImg = item["@type"] === "ImageObject";
+                // Block Spotlight VideoObject from polluting Stories
+                if (!isImg && item["@type"] === "VideoObject") {
+                  continue;
+                }
                 stories.push({
                   id: Math.random().toString(36).slice(2, 10),
                   type: isImg ? "image" : "video",
@@ -1464,31 +1545,29 @@ async function startServer() {
           }
         });
 
-        // Method 2: Raw script tag scanning (fallback)
+        // Method 2: Raw script tag scanning (fallback for photo snaps only to prevent Spotlight leak)
         if (stories.length === 0) {
           $("script").each((_, el) => {
             const content = $(el).html() || "";
             if (content.includes("contentUrl")) {
               try {
-                const matches =
-                  content.match(/"contentUrl"\s*:\s*"([^"]+)"/g) || [];
+                const matches = content.match(/"contentUrl"\s*:\s*"([^"]+)"/g) || [];
                 matches.forEach((match) => {
                   const mediaUrl = (match as string)
                     .replace(/"contentUrl"\s*:\s*"/, "")
                     .replace(/"$/, "");
                   if (mediaUrl.startsWith("http")) {
-                    const isImg =
-                      mediaUrl.includes(".jpg") ||
-                      mediaUrl.includes(".jpeg") ||
-                      mediaUrl.includes(".webp");
-                    stories.push({
-                      id: Math.random().toString(36).slice(2, 10),
-                      type: isImg ? "image" : "video",
-                      url: mediaUrl,
-                      thumbnail: mediaUrl,
-                      title: `Story ${stories.length + 1}`,
-                      downloadUrl: `/api/story-proxy?url=${encodeURIComponent(mediaUrl)}&type=${isImg ? "image" : "video"}&username=${username}&num=${stories.length + 1}`,
-                    });
+                    const isImg = mediaUrl.includes(".jpg") || mediaUrl.includes(".jpeg") || mediaUrl.includes(".webp");
+                    if (isImg) {
+                      stories.push({
+                        id: Math.random().toString(36).slice(2, 10),
+                        type: "image",
+                        url: mediaUrl,
+                        thumbnail: mediaUrl,
+                        title: `Photo Story ${stories.length + 1}`,
+                        downloadUrl: `/api/story-proxy?url=${encodeURIComponent(mediaUrl)}&type=image&username=${username}&num=${stories.length + 1}`,
+                      });
+                    }
                   }
                 });
               } catch {}
