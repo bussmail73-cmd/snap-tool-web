@@ -101,6 +101,7 @@ const FAQsData = [
 // Legal and Info Pages
 const About = () => (
   <div className="min-h-screen bg-white">
+    <h1 className="sr-only">About Getinbex</h1>
     <Helmet>
       <title>About Getinbex | Private Snapchat Tools & Resources</title>
       <meta name="description" content="Learn about Getinbex, the premier destination for anonymous Snapchat tools. We prioritize privacy, security, and accessibility for all users worldwide." />
@@ -289,6 +290,7 @@ const FAQ = () => {
 
   return (
     <div className="bg-white">
+      <h1 className="sr-only">Frequently Asked Questions</h1>
       <Helmet>
         <title>FAQ | Getinbex - Frequently Asked Questions</title>
         <meta name="description" content="Find answers to frequently asked questions about Getinbex, our Snapchat tools, privacy, safety, and more." />
@@ -510,6 +512,68 @@ export default function App() {
   );
 }
 
+function ToolFAQAccordion({ tool }: { tool: Tool }) {
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+  const faqs = [
+    {
+      question: `What is ${tool.name}?`,
+      answer: tool.description
+    },
+    {
+      question: "How do I use this tool?",
+      answer: "Simply enter the Snapchat username or link you want to search for, and click the button. Our tool will fetch and display the results in seconds."
+    },
+    {
+      question: "Is this tool 100% free?",
+      answer: "Yes, all Getinbex tools are completely free to use with no hidden charges, premium features, or ads."
+    },
+    {
+      question: "Do I need to create an account?",
+      answer: "No, Getinbex tools work without any account creation, registration, or login. Complete anonymity guaranteed."
+    },
+    {
+      question: "Is my data tracked?",
+      answer: "No. We do not track, store, or log any of your data. Your privacy is our absolute priority. All sessions are completely anonymous."
+    },
+    {
+      question: "Is it legal to use this tool?",
+      answer: "Our tools only access public content from Snapchat. Using tools to view public content is legal. However, always respect privacy and follow Snapchat's terms of service."
+    },
+    {
+      question: "What devices does this work on?",
+      answer: "Getinbex works on all devices with a web browser - desktop, laptop, tablet, and mobile phones. No app installation required."
+    },
+    {
+      question: "Do you store downloaded content?",
+      answer: "No. Downloaded content is processed through our servers temporarily and immediately deleted. We do not store any user data or downloaded files."
+    }
+  ];
+
+  return (
+    <div className="home-faq-list text-left">
+      {faqs.map((faq, idx) => (
+        <div key={idx} className="home-faq-item">
+          <div 
+            className="home-faq-question-header"
+            onClick={() => setExpandedIndex(expandedIndex === idx ? null : idx)}
+          >
+            <h3>{faq.question}</h3>
+            <span className="home-faq-toggle">
+              {expandedIndex === idx ? '−' : '+'}
+            </span>
+          </div>
+          {expandedIndex === idx && (
+            <div className="home-faq-answer">
+              <p>{faq.answer}</p>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ToolPageRoute({ tool }: { tool: Tool }) {
   return (
     <>
@@ -648,6 +712,15 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
       />
       <ToolsGrid />
       <HowToWork tool={tool} />
+
+      {/* TOOL FAQ SECTION */}
+      <section className="home-section border-t border-gray-100 pt-16 pb-24">
+        <div className="home-section-header">
+          <h2>Frequently Asked Questions</h2>
+          <p>Got questions about using {tool.name}? Here are answers to the most common queries.</p>
+        </div>
+        <ToolFAQAccordion tool={tool} />
+      </section>
 
       {/* ABOUT GETINBEX SECTION - Same as Home Page */}
       <section className="home-section border-t border-gray-100 pt-16 pb-24">

@@ -110,37 +110,27 @@
       }
     }
     </script>
-    <!-- JSON-LD Structured Data - LocalBusiness -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "LocalBusiness",
-      "name": "Getinbex",
-      "url": "https://getinbex.com",
-      "description": "Anonymous Snapchat Tools - View Stories, Download Videos, Lookup Profiles",
-      "image": "https://getinbex.com/Logo.png",
-      "priceRange": "Free"
-    }
-    </script>
   </head>
   <body>
-    <!-- Semantic Shell for SEO Crawlers (Visually hidden for SPA, full crawler compliance) -->
-    <header style="display: none;">
+    <!-- Semantic Shell for SEO Crawlers (Using sr-only for screen-reader and crawler accessibility without visual footprint) -->
+    <header class="sr-only">
       <nav>
         <a href="/">Home</a>
-        <a href="/profile-viewer">Profile Viewer</a>
-        <a href="/video-downloader">Video Downloader</a>
         <a href="/story-viewer">Story Viewer</a>
-        <a href="/dp-downloader">DP Downloader</a>
+        <a href="/profile-viewer">Profile Viewer</a>
+        <a href="/story-downloader">Story Downloader</a>
+        <a href="/spotlight-downloader">Spotlight Downloader</a>
+        <a href="/video-downloader">Video Downloader</a>
+        <a href="/profile-dp-download">DP Downloader</a>
       </nav>
     </header>
 
-    <main style="display: none;">
+    <main class="sr-only">
       <h1>Getinbex - Anonymous Snapchat Viewer and Downloader</h1>
       <p>View stories anonymously, download spotlight videos, lookup profiles and search usernames without watermark or registration.</p>
     </main>
 
-    <footer style="display: none;">
+    <footer class="sr-only">
       <p>© 2026 Getinbex Tools. All rights reserved.</p>
     </footer>
 
