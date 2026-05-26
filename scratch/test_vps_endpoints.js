@@ -1,9 +1,14 @@
 import axios from "axios";
+import https from "https";
 
-const LIVE_HOST = "http://3.239.159.94:3000";
+const LIVE_HOST = "https://3.239.159.94";
 const TEST_USER_1 = "maira_shoukat97";
 const TEST_USER_2 = "wwe";
 const TEST_SPOTLIGHT = "https://www.snapchat.com/spotlight/W7_EDlXWTBiXAEEniNoMPwAAYd2NxbHJydHZmAZNOSWErAZNOSDxMAAAAAw";
+
+const agent = new https.Agent({
+  rejectUnauthorized: false
+});
 
 async function testEndpoint(name, path, payload) {
   const start = Date.now();
@@ -11,6 +16,7 @@ async function testEndpoint(name, path, payload) {
   try {
     const response = await axios.post(`${LIVE_HOST}${path}`, payload, {
       timeout: 15000,
+      httpsAgent: agent,
       headers: {
         "Content-Type": "application/json",
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
