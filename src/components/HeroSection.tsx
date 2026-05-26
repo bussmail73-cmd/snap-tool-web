@@ -34,6 +34,15 @@ export default function HeroSection({ toolId, title, description, placeholder, b
   const [errorMsg, setErrorMsg] = useState("");
   const [suggestedToolId, setSuggestedToolId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isMounted = useRef(true);
+
+  // Set isMounted ref status
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   // Reset state when switching tools
   useEffect(() => {
@@ -101,16 +110,21 @@ export default function HeroSection({ toolId, title, description, placeholder, b
 
       const data = await response.json();
 
+      if (!isMounted.current) return;
+
       if (!response.ok) {
         throw new Error(data.error || "Failed to process link");
       }
 
       navigate("/result", { state: { result: data, toolId } });
     } catch (err: any) {
+      if (!isMounted.current) return;
       setHasError(true);
       setErrorMsg(err.message || "An error occurred");
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
     }
   }, [toolId, inputValue, navigate]);
 
@@ -159,18 +173,22 @@ export default function HeroSection({ toolId, title, description, placeholder, b
       }
 
       const text = await navigator.clipboard.readText();
+      if (!isMounted.current) return;
       if (text && text.trim()) {
         setInputValue(text.trim());
         setHasError(false);
         setErrorMsg("");
         // Show brief success indicator
         setPasteSuccess(true);
-        setTimeout(() => setPasteSuccess(false), 2000);
+        setTimeout(() => {
+          if (isMounted.current) setPasteSuccess(false);
+        }, 2000);
       } else {
         setHasError(true);
         setErrorMsg("Clipboard appears to be empty. Please copy a Snapchat link first, then click Paste.");
       }
     } catch (err: any) {
+      if (!isMounted.current) return;
       if (err?.name === 'NotAllowedError') {
         setHasError(true);
         setErrorMsg("Clipboard access was denied. Please click 'Allow' when your browser asks for clipboard permission, or paste manually using Ctrl+V.");
@@ -180,6 +198,7 @@ export default function HeroSection({ toolId, title, description, placeholder, b
       }
     }
   }, []);
+
   const renderTitle = useMemo(() => {
     if (!highlightedWord) return title;
     
@@ -229,6 +248,12 @@ export default function HeroSection({ toolId, title, description, placeholder, b
                 onChange={(e) => {
                   setInputValue(e.target.value);
                   if (hasError) setHasError(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAction();
+                  }
                 }}
                 placeholder={placeholder}
                 className="flex-1 bg-transparent border-none outline-none text-gray-700 font-medium placeholder:text-gray-500 text-sm md:text-base text-left"

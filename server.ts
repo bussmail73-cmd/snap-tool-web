@@ -1233,8 +1233,8 @@ async function startServer() {
             for (const item of items) {
               if (item.contentUrl) {
                 const isImg = item["@type"] === "ImageObject";
-                // Block Spotlight VideoObject from polluting Story tools
-                if (!isImg && item["@type"] === "VideoObject") {
+                // Strictly block any non-image (like Spotlight videos) from JSON-LD fallback in Story tool
+                if (!isImg) {
                   continue;
                 }
                 const uploadDateStr = item.uploadDate || new Date().toISOString();
@@ -1526,8 +1526,8 @@ async function startServer() {
             for (const item of items) {
               if (item.contentUrl) {
                 const isImg = item["@type"] === "ImageObject";
-                // Block Spotlight VideoObject from polluting Stories
-                if (!isImg && item["@type"] === "VideoObject") {
+                // Strictly block any non-image (like Spotlight videos) from JSON-LD fallback in Stories
+                if (!isImg) {
                   continue;
                 }
                 stories.push({
