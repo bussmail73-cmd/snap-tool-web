@@ -9,6 +9,7 @@ import { HelmetProvider, Helmet } from "react-helmet-async";
 import Navbar from "./components/Navbar";
 import HeroSection from "./components/HeroSection";
 import ToolsGrid from "./components/ToolsGrid";
+import HowToWork from "./components/HowToWork";
 import Home from "./components/Home";
 import ScrollToTop from "./components/ScrollToTop";
 import ResultPage from "./components/ResultPage";
@@ -646,6 +647,72 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
         examples={tool.examples}
       />
       <ToolsGrid />
+      <HowToWork tool={tool} />
+
+      {/* ABOUT GETINBEX SECTION - Same as Home Page */}
+      <section className="home-section border-t border-gray-100 pt-16 pb-24">
+        <div className="home-section-header">
+          <h2>About Getinbex</h2>
+          <p>Getinbex is a premium online tool suite built to make social media content effortlessly accessible. Right now, it specializes in Snapchat — letting you view and download profile pictures, stories, spotlight clips, videos, and more without ever needing to sign in.</p>
+          <p className="mt-6">Everything is delivered in original quality up to crisp 4K resolution, with no watermarks, no ads, and no tracking. Just paste a link and save what you need — fast, anonymous, and 100% free for everyone.</p>
+        </div>
+      </section>
+
+      {/* COMPARISON SECTION - Same as Home Page */}
+      <section className="home-section border-t border-gray-100 pt-16 pb-24">
+        <div className="home-section-header">
+          <h2>Getinbex vs the other</h2>
+          <p>See how we stack up against the typical Snapchat tools you'll find elsewhere.</p>
+        </div>
+        <div className="home-comparison-divider"></div>
+        
+        <table className="home-comparison-table">
+          <thead className="home-comparison-header">
+            <tr>
+              <th>Feature</th>
+              <th>Getinbex</th>
+              <th>Others</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="home-comparison-row">
+              <td>100% anonymous browsing</td>
+              <td><span className="home-comparison-check">✓</span></td>
+              <td><span className="home-comparison-cross">✗</span></td>
+            </tr>
+            <tr className="home-comparison-row">
+              <td>No sign-up required</td>
+              <td><span className="home-comparison-check">✓</span></td>
+              <td><span className="home-comparison-cross">✗</span></td>
+            </tr>
+            <tr className="home-comparison-row">
+              <td>Download in 4K / HD quality</td>
+              <td><span className="home-comparison-check">✓</span></td>
+              <td><span className="home-comparison-cross">✗</span></td>
+            </tr>
+            <tr className="home-comparison-row">
+              <td>Zero watermarks</td>
+              <td><span className="home-comparison-check">✓</span></td>
+              <td><span className="home-comparison-cross">✗</span></td>
+            </tr>
+            <tr className="home-comparison-row">
+              <td>No daily download limits</td>
+              <td><span className="home-comparison-check">✓</span></td>
+              <td><span className="home-comparison-cross">✗</span></td>
+            </tr>
+            <tr className="home-comparison-row">
+              <td>Free forever — no premium tier</td>
+              <td><span className="home-comparison-check">✓</span></td>
+              <td><span className="home-comparison-cross">✗</span></td>
+            </tr>
+            <tr className="home-comparison-row">
+              <td>Ad-free experience</td>
+              <td><span className="home-comparison-check">✓</span></td>
+              <td><span className="home-comparison-cross">✗</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
     </>
   );
 }

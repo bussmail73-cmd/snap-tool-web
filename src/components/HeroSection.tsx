@@ -104,7 +104,8 @@ export default function HeroSection({ toolId, title, description, placeholder, b
         throw new Error(data.error || "Failed to process link");
       }
 
-      navigate("/result", { state: { result: data, toolId } });    } catch (err: any) {
+      navigate("/result", { state: { result: data, toolId } });
+    } catch (err: any) {
       setHasError(true);
       setErrorMsg(err.message || "An error occurred");
     } finally {
@@ -214,7 +215,7 @@ export default function HeroSection({ toolId, title, description, placeholder, b
       <motion.div 
         animate={hasError ? { x: [-5, 5, -5, 5, 0] } : {}}
         transition={{ duration: 0.4 }}
-        className="max-w-4xl mx-auto mb-6"
+        className="max-w-4xl mx-auto mb-10"
       >
         <div className="flex flex-col md:flex-row gap-2">
           <div className="flex-1 relative group">
@@ -229,7 +230,7 @@ export default function HeroSection({ toolId, title, description, placeholder, b
                   if (hasError) setHasError(false);
                 }}
                 placeholder={placeholder}
-                className="flex-1 bg-transparent border-none outline-none text-gray-700 font-medium placeholder:text-gray-500 text-sm md:text-base"
+                className="flex-1 bg-transparent border-none outline-none text-gray-700 font-medium placeholder:text-gray-500 text-sm md:text-base text-left"
               />
               <button 
                 onClick={handlePaste}
@@ -245,7 +246,7 @@ export default function HeroSection({ toolId, title, description, placeholder, b
           <button 
             onClick={handleAction}
             disabled={isLoading}
-            className="premium-action-btn active:scale-95 whitespace-nowrap gap-2 disabled:opacity-80 disabled:cursor-not-allowed group relative"
+            className="premium-action-btn active:scale-95 whitespace-nowrap gap-2 disabled:opacity-80 disabled:cursor-not-allowed group relative cursor-pointer"
           >
             {isLoading ? (
               <span className="flex items-center gap-1">
@@ -294,7 +295,7 @@ export default function HeroSection({ toolId, title, description, placeholder, b
             {suggestedToolId && (
               <button
                 onClick={handleGoToSuggestedTool}
-                className="flex items-center gap-2 px-4 py-2 bg-snap-brand/10 hover:bg-snap-brand/20 text-snap-brand rounded-full text-xs font-black uppercase tracking-widest transition-all transform hover:scale-105 active:scale-95"
+                className="flex items-center gap-2 px-4 py-2 bg-snap-brand/10 hover:bg-snap-brand/20 text-snap-brand rounded-full text-xs font-black uppercase tracking-widest transition-all transform hover:scale-105 active:scale-95 cursor-pointer"
               >
                 Go to {TOOLS.find(t => t.id === suggestedToolId)?.title || "Correct Tool"}
                 <Check className="w-3 h-3" />

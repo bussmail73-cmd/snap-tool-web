@@ -30,7 +30,7 @@ function ToolsGrid() {
                 </div>
                 <div className="home-tool-content">
                   <h3>{tool.name}</h3>
-                  <p>{tool.description.split('.')[0]}.</p>
+                  <p>{tool.id === "spotlight-downloader" ? tool.description : `${tool.description.split('.')[0]}.`}</p>
                 </div>
               </div>
             </Link>
