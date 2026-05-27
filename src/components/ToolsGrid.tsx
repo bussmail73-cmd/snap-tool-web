@@ -21,10 +21,13 @@ function ToolsGrid() {
             <Link 
               key={tool.id} 
               to={tool.path}
-              className="home-tool-card block no-underline text-inherit hover:text-inherit"
+              className="home-tool-card group block no-underline text-inherit hover:text-inherit"
               title={`${tool.name} - ${tool.description}`}
             >
-              <div className="home-tool-card-inner">
+              {/* Soft Colorful Moving Gradient Shine Overlay */}
+              <div className="absolute inset-0 bg-gradient-to-tr from-yellow-300/10 via-pink-400/10 to-purple-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-out rounded-xl animate-gradient-shine pointer-events-none" />
+
+              <div className="home-tool-card-inner relative z-10">
                 <div className="home-tool-icon" aria-label={tool.name}>
                   <IconComponent className="w-6 h-6" aria-hidden="true" />
                 </div>
@@ -32,6 +35,22 @@ function ToolsGrid() {
                   <h3>{tool.name}</h3>
                   <p>{tool.id === "spotlight-downloader" ? tool.description : `${tool.description.split('.')[0]}.`}</p>
                 </div>
+              </div>
+
+              {/* Elegant Animated Corner Arrow with "Click" Text */}
+              <div className="absolute bottom-3 right-4 flex items-center gap-1 text-slate-400 group-hover:text-purple-600 transition-colors duration-300 pointer-events-none select-none z-10">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out">
+                  Click
+                </span>
+                <svg 
+                  className="w-4 h-4 transform group-hover:translate-x-1 transition-transform duration-300 ease-out" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor" 
+                  strokeWidth="3"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
               </div>
             </Link>
           );

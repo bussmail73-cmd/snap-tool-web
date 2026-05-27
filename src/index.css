@@ -189,11 +189,14 @@
 }
 
 .home-tool-card {
-  @apply relative overflow-hidden rounded-xl bg-white border border-slate-200 p-6 cursor-pointer transition-all duration-300;
+  @apply relative overflow-hidden rounded-xl bg-white border border-slate-200 p-6 pb-9 cursor-pointer transition-all duration-500 ease-out;
 }
 
 .home-tool-card:hover {
-  @apply shadow-2xl scale-[1.02] border-purple-200;
+  @apply scale-[1.02] border-transparent;
+  box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.12), 
+              0 15px 30px -10px rgba(236, 72, 153, 0.12), 
+              0 10px 20px -10px rgba(234, 179, 8, 0.12);
 }
 
 .home-tool-card-inner {
@@ -206,6 +209,17 @@
 
 .home-tool-card:hover .home-tool-icon {
   @apply bg-slate-100;
+}
+
+@keyframes gradientShine {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient-shine {
+  background-size: 200% 200%;
+  animation: gradientShine 5s linear infinite;
 }
 
 .home-tool-content h3 {
