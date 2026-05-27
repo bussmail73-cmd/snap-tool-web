@@ -106,9 +106,18 @@ const About = () => (
       <title>About Getinbex | Private Snapchat Tools & Resources</title>
       <meta name="description" content="Learn about Getinbex, the premier destination for anonymous Snapchat tools. We prioritize privacy, security, and accessibility for all users worldwide." />
       <link rel="canonical" href="https://getinbex.com/about" />
+      <meta property="og:type" content="website" />
       <meta property="og:title" content="About Getinbex | Private Snapchat Tools" />
       <meta property="og:description" content="Learn about Getinbex, the premier destination for anonymous Snapchat tools. We prioritize privacy, security, and accessibility." />
       <meta property="og:url" content="https://getinbex.com/about" />
+      <meta property="og:image" content="https://getinbex.com/Logo.png" />
+      <meta property="og:image:alt" content="Getinbex - Anonymous Snapchat Tools" />
+      <meta property="og:locale" content="en_US" />
+      <meta property="og:site_name" content="Getinbex" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="About Getinbex | Private Snapchat Tools" />
+      <meta name="twitter:description" content="Learn about Getinbex, the premier destination for anonymous Snapchat tools. We prioritize privacy, security, and accessibility." />
+      <meta name="twitter:image" content="https://getinbex.com/Logo.png" />
       <meta name="robots" content="index, follow" />
       <script type="application/ld+json">
       {JSON.stringify({
@@ -203,9 +212,18 @@ const Contact = () => (
       <title>Contact Getinbex | Technical Support & Feedback</title>
       <meta name="description" content="Get in touch with the Getinbex team for technical support, feedback, or any questions about our free Snapchat tools. Email us at support@getinbex.com." />
       <link rel="canonical" href="https://getinbex.com/contact" />
+      <meta property="og:type" content="website" />
       <meta property="og:title" content="Contact Us | Getinbex Support" />
       <meta property="og:description" content="Get in touch with the Getinbex team for technical support, feedback, or any questions about our free Snapchat tools." />
       <meta property="og:url" content="https://getinbex.com/contact" />
+      <meta property="og:image" content="https://getinbex.com/Logo.png" />
+      <meta property="og:image:alt" content="Getinbex - Anonymous Snapchat Tools" />
+      <meta property="og:locale" content="en_US" />
+      <meta property="og:site_name" content="Getinbex" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="Contact Us | Getinbex Support" />
+      <meta name="twitter:description" content="Get in touch with the Getinbex team for technical support, feedback, or any questions about our free Snapchat tools." />
+      <meta name="twitter:image" content="https://getinbex.com/Logo.png" />
       <meta name="robots" content="index, follow" />
       <script type="application/ld+json">
       {JSON.stringify({
@@ -247,6 +265,18 @@ const PrivacyPolicy = () => (
       <title>Privacy Policy | Getinbex - 100% Anonymous</title>
       <meta name="description" content="Read our privacy policy to understand how Getinbex protects your data and ensures 100% anonymous browsing of Snapchat content with zero tracking." />
       <link rel="canonical" href="https://getinbex.com/privacy" />
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content="Privacy Policy | Getinbex - 100% Anonymous" />
+      <meta property="og:description" content="Read our privacy policy to understand how Getinbex protects your data and ensures 100% anonymous browsing of Snapchat content with zero tracking." />
+      <meta property="og:url" content="https://getinbex.com/privacy" />
+      <meta property="og:image" content="https://getinbex.com/Logo.png" />
+      <meta property="og:image:alt" content="Getinbex - Anonymous Snapchat Tools" />
+      <meta property="og:locale" content="en_US" />
+      <meta property="og:site_name" content="Getinbex" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="Privacy Policy | Getinbex" />
+      <meta name="twitter:description" content="Read our privacy policy to understand how Getinbex protects your data and ensures 100% anonymous browsing of Snapchat content." />
+      <meta name="twitter:image" content="https://getinbex.com/Logo.png" />
       <meta name="robots" content="index, follow" />
       <script type="application/ld+json">
       {JSON.stringify({
@@ -295,10 +325,33 @@ const FAQ = () => {
         <title>FAQ | Getinbex - Frequently Asked Questions</title>
         <meta name="description" content="Find answers to frequently asked questions about Getinbex, our Snapchat tools, privacy, safety, and more." />
         <link rel="canonical" href="https://getinbex.com/faq" />
+        <meta property="og:type" content="website" />
         <meta property="og:title" content="FAQ | Getinbex" />
         <meta property="og:description" content="Frequently asked questions about Getinbex Snapchat tools" />
         <meta property="og:url" content="https://getinbex.com/faq" />
+        <meta property="og:image" content="https://getinbex.com/Logo.png" />
+        <meta property="og:image:alt" content="Getinbex - Anonymous Snapchat Tools" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:site_name" content="Getinbex" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="FAQ | Getinbex - Frequently Asked Questions" />
+        <meta name="twitter:description" content="Find answers to frequently asked questions about Getinbex, our Snapchat tools, privacy, safety, and more." />
+        <meta name="twitter:image" content="https://getinbex.com/Logo.png" />
         <meta name="robots" content="index, follow" />
+        <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": FAQsData.map((faq) => ({
+            "@type": "Question",
+            "name": faq.question,
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": faq.answer
+            }
+          }))
+        })}
+        </script>
       </Helmet>
 
       {/* FAQ SECTION - Same as Home Page */}
@@ -339,6 +392,18 @@ const TermsOfService = () => (
       <title>Terms of Service | Getinbex Usage Policy</title>
       <meta name="description" content="Read the terms of service and acceptable use policy for Getinbex free Snapchat downloader and viewer tools. Understand your rights and responsibilities." />
       <link rel="canonical" href="https://getinbex.com/terms" />
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content="Terms of Service | Getinbex Usage Policy" />
+      <meta property="og:description" content="Read the terms of service and acceptable use policy for Getinbex free Snapchat downloader and viewer tools." />
+      <meta property="og:url" content="https://getinbex.com/terms" />
+      <meta property="og:image" content="https://getinbex.com/Logo.png" />
+      <meta property="og:image:alt" content="Getinbex - Anonymous Snapchat Tools" />
+      <meta property="og:locale" content="en_US" />
+      <meta property="og:site_name" content="Getinbex" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="Terms of Service | Getinbex" />
+      <meta name="twitter:description" content="Read the terms of service and acceptable use policy for Getinbex free Snapchat tools." />
+      <meta name="twitter:image" content="https://getinbex.com/Logo.png" />
       <meta name="robots" content="index, follow" />
       <script type="application/ld+json">
       {JSON.stringify({
@@ -449,7 +514,7 @@ export default function App() {
                       <link rel="canonical" href="https://getinbex.com/" />
                       <meta property="og:title" content="Getinbex | 100% Free Anonymous Snapchat Tools" />
                       <meta property="og:description" content="View stories, download spotlights, lookup profiles & search Snapchat users - all 100% anonymously and for free" />
-                      <meta property="og:url" content="https://getinbex.com" />
+                      <meta property="og:url" content="https://getinbex.com/" />
                       <meta name="twitter:title" content="Getinbex | 100% Free Anonymous Snapchat Tools" />
                       <meta name="twitter:description" content="View stories, download spotlights, lookup profiles & search Snapchat users - all 100% anonymously and for free" />
                       <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
@@ -584,6 +649,8 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
         <meta property="og:description" content={tool.description} />
         <meta property="og:url" content={`https://getinbex.com${tool.path}`} />
         <meta property="og:type" content="website" />
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:site_name" content="Getinbex" />
         <meta name="twitter:title" content={`${tool.title} | Getinbex`} />
         <meta name="twitter:description" content={tool.description} />
         <meta property="og:image" content="https://getinbex.com/Logo.png" />
