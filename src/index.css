@@ -395,7 +395,7 @@
 }
 
 .home-faq-answer p {
-  @apply text-sm text-slate-600 leading-relaxed leading-6;
+  @apply text-sm text-slate-600 leading-6;
 }
 
 .home-faq-button-group {
