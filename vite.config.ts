@@ -10,6 +10,24 @@ export default defineConfig(({mode}) => {
     define: {
       'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
+    build: {
+      cssCodeSplit: true,
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom'],
+            router: ['react-router-dom'],
+            helmet: ['react-helmet-async'],
+            icons: ['lucide-react'],
+            motion: ['motion'],
+          },
+        },
+      },
+    },
+    esbuild: {
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

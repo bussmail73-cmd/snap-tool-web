@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { Suspense, lazy, useState } from "react";
 import { Link, BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { HelmetProvider, Helmet } from "react-helmet-async";
 import Navbar from "./components/Navbar";
@@ -12,12 +12,12 @@ import ToolsGrid from "./components/ToolsGrid";
 import HowToWork from "./components/HowToWork";
 import Home from "./components/Home";
 import ScrollToTop from "./components/ScrollToTop";
-import ResultPage from "./components/ResultPage";
-import Dashboard from "./components/Dashboard";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { LOGO_BASE64 } from "./components/logo";
 import { TOOLS, Tool } from "./constants";
 import { Mail } from "lucide-react";
+
+const ResultPage = lazy(() => import("./components/ResultPage"));
 
 // FAQ data for FAQ page
 const FAQsData = [
@@ -489,7 +489,7 @@ export default function App() {
                   </>
                 } 
               />
-              <Route path="/result" element={<ResultPage />} />
+              <Route path="/result" element={<Suspense fallback={null}><ResultPage /></Suspense>} />
               {TOOLS.map((tool) => (
                 <Route 
                   // @ts-ignore - RouteProps key issue
@@ -503,7 +503,6 @@ export default function App() {
               <Route path="/faq" element={<FAQ />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/dashboard" element={<Dashboard />} />
             </Routes>
           </Layout>
         </Router>

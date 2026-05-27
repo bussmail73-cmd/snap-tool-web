@@ -3,14 +3,12 @@
 # General Rules for all bots
 User-agent: *
 Allow: /
-Allow: /public/
 Allow: /sitemap.xml
 Disallow: /result
 Disallow: /api/
-Disallow: /admin
 Disallow: /.env
-Disallow: /node_modules
-Disallow: /dist
+Disallow: /node_modules/
+Disallow: /dist/
 Disallow: /*.json$
 Disallow: /src/
 Crawl-delay: 1
@@ -18,21 +16,17 @@ Crawl-delay: 1
 # Specific rules for Googlebot (most important)
 User-agent: Googlebot
 Allow: /
-Allow: /public/
 Allow: /sitemap.xml
 Disallow: /result
 Disallow: /api/
 Crawl-delay: 0
-Request-rate: 50/1s
 
 # Specific rules for Bingbot
 User-agent: Bingbot
 Allow: /
-Allow: /public/
 Disallow: /result
 Disallow: /api/
 Crawl-delay: 1
-Request-rate: 30/1s
 
 # Yandex
 User-agent: YandexBot
@@ -68,4 +62,3 @@ Disallow: /
 
 # Sitemap location
 Sitemap: https://getinbex.com/sitemap.xml
-Sitemap: https://getinbex.com/public/sitemap.xml

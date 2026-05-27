@@ -31,7 +31,6 @@ SnapBlast packs a comprehensive suite of tools built on a single, high-performan
 *   ⚡ **Spotlight Downloader:** Instantly download individual Snapchat Spotlight videos directly by entering the share link.
 *   🖼️ **High-Definition DP Downloader:** Extract and download full-resolution high-definition profile pictures (avatars) from any username.
 *   🔍 **Snapchat Profile Viewer:** Seamlessly inspect public profile details, display names, subscriber metrics, biography, active story counts, and metadata.
-*   📊 **Developer Analytics Dashboard:** Built-in real-time stats tracker accessible at `/dashboard` (secured with passcode `1423`) to monitor live CPU/Memory utilization, scraping latency graphs, cache hit ratios, and real-time backend scrap logs.
 
 ---
 
@@ -103,21 +102,6 @@ Then start the high-performance Express production server:
 ```bash
 npm run start
 ```
-
----
-
-## 📊 Developer & Admin Dashboard
-
-SnapBlast features a secure built-in analytics dashboard to monitor your web app's live health:
-
-1.  Navigate to **`http://localhost:3000/dashboard`** in your browser.
-2.  Enter the secure passcode: **`1423`**
-3.  **Features available in the dashboard:**
-    *   📈 Live CPU Delta tracker & RAM usage stats.
-    *   ⏱️ Request latency history (average response times in milliseconds).
-    *   🔄 Cache bypass switches to force real-time server scraping.
-    *   ⚙️ Scraper Timeout controls to adjust response limits dynamically.
-    *   📝 Live Activity Logs showing usernames, scraping types, latencies, and statuses.
 
 ---
 

@@ -14,7 +14,6 @@ import { LRUCache } from "lru-cache";
 import http from "http";
 import https from "https";
 import dotenv from "dotenv";
-import os from "os";
 import dns from "dns";
 
 // Optimize DNS lookups globally by prioritizing IPv4 to prevent IPv6 connection failures
@@ -48,128 +47,8 @@ let ytdlpUsageCount = 0;
 
 // Interactive Configuration States
 let configCacheBypass = false;
-let configYtdlpPriority = false;
 let configScraperTimeout = 3000;
 
-// Instantaneous CPU Delta Tracker
-let currentCpuUsage = 0;
-function getCpuTimes() {
-  const cpus = os.cpus();
-  let idle = 0;
-  let total = 0;
-  cpus.forEach((cpu) => {
-    for (const type in cpu.times) {
-      total += (cpu.times as any)[type];
-    }
-    idle += cpu.times.idle;
-  });
-  return { idle, total };
-}
-let lastCpuMetrics = getCpuTimes();
-setInterval(() => {
-  const current = getCpuTimes();
-  const idleDiff = current.idle - lastCpuMetrics.idle;
-  const totalDiff = current.total - lastCpuMetrics.total;
-  if (totalDiff > 0) {
-    currentCpuUsage = Math.round(((totalDiff - idleDiff) / totalDiff) * 100);
-  }
-  lastCpuMetrics = current;
-}, 1000);
-
-// Global Activity Logs Queue (Last 50 Scrapes/Downloads)
-interface ActivityLog {
-  id: string;
-  timestamp: string;
-  type: "download" | "stories" | "profile" | "bulk" | "simulated";
-  username: string;
-  status: "success" | "failed" | "pending";
-  latency: number;
-  message: string;
-}
-const activityLogs: ActivityLog[] = [];
-
-function addActivityLog(
-  type: ActivityLog["type"],
-  username: string,
-  status: ActivityLog["status"],
-  latency: number,
-  message: string
-) {
-  const newLog: ActivityLog = {
-    id: Math.random().toString(36).substring(2, 9),
-    timestamp: new Date().toLocaleTimeString(),
-    type,
-    username: username || "anonymous",
-    status,
-    latency,
-    message: message.substring(0, 200)
-  };
-  activityLogs.unshift(newLog);
-  if (activityLogs.length > 50) {
-    activityLogs.pop();
-  }
-}
-
-// Global System Alerts List for status page
-interface SystemAlert {
-  id: string;
-  timestamp: string;      // "HH:MM:SS"
-  timestampDate: string;  // "YYYY-MM-DD"
-  type: "info" | "warning" | "error";
-  tool: string;           // e.g. "Profile Viewer"
-  message: string;
-}
-const systemAlerts: SystemAlert[] = [];
-
-// Helper to mask sensitive input for public status page
-function maskSensitiveInfo(input: string): string {
-  if (!input) return "anonymous";
-  const trimmed = input.trim();
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.includes("snapchat.com")) {
-    try {
-      const url = new URL(trimmed);
-      const pathSegs = url.pathname.split("/");
-      const lastSeg = pathSegs[pathSegs.length - 1] || "";
-      if (lastSeg.length > 4) {
-        return `${url.origin}/${pathSegs.slice(1, -1).join("/")}/${lastSeg.slice(0, 2)}****${lastSeg.slice(-2)}`;
-      }
-      return `${url.origin}/.../link`;
-    } catch {
-      return "link-masked";
-    }
-  }
-  
-  if (trimmed.length > 4) {
-    return `${trimmed.slice(0, 2)}****${trimmed.slice(-2)}`;
-  } else if (trimmed.length > 2) {
-    return `${trimmed.slice(0, 1)}**${trimmed.slice(-1)}`;
-  }
-  return "**";
-}
-
-function addSystemAlert(
-  type: SystemAlert["type"],
-  tool: string,
-  message: string
-) {
-  const date = new Date();
-  const pad = (n: number) => n.toString().padStart(2, '0');
-  const formattedTime = `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-  const formattedDate = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-
-  const newAlert: SystemAlert = {
-    id: Math.random().toString(36).substring(2, 9),
-    timestamp: formattedTime,
-    timestampDate: formattedDate,
-    type,
-    tool,
-    message: message.substring(0, 300)
-  };
-  systemAlerts.unshift(newAlert);
-  if (systemAlerts.length > 30) {
-    systemAlerts.pop();
-  }
-}
 
 // Global cache
 const metadataCache = new LRUCache<string, any>({
@@ -249,15 +128,12 @@ setInterval(async () => {
     const currentStatus = res.status === 200 || res.status === 403 || res.status === 301 || res.status === 302;
     if (currentStatus !== isSnapchatReachable) {
       if (currentStatus) {
-        addSystemAlert("info", "System", "Connection to Snapchat host restored.");
       } else {
-        addSystemAlert("error", "System", "Connection to Snapchat host lost or being blocked.");
       }
       isSnapchatReachable = currentStatus;
     }
   } catch (err: any) {
     if (isSnapchatReachable) {
-      addSystemAlert("error", "System", `Connection to Snapchat host failed: ${err.message}`);
       isSnapchatReachable = false;
     }
   }
@@ -823,72 +699,6 @@ async function startServer() {
     });
 
     // =====================================================
-    // ROUTE: Admin System Status & Alerts (Private)
-    // =====================================================
-    app.get("/api/admin/status", (req, res) => {
-      const passcode = req.headers["x-admin-passcode"];
-      const envPasscode = process.env.DASHBOARD_PASSCODE || "1423";
-      if (passcode !== envPasscode) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-      const getStatsForTool = (toolKey: string, filterFn: (log: ActivityLog) => boolean, defaultLatency: number) => {
-        const matchingLogs = activityLogs.filter(filterFn).filter(l => l.status === "success" && l.latency > 0);
-        const avgLatency = matchingLogs.length > 0
-          ? Math.round(matchingLogs.reduce((sum, l) => sum + l.latency, 0) / matchingLogs.length)
-          : defaultLatency;
-
-        // Determine tool status based on recent alerts for this tool
-        const toolAlerts = systemAlerts.filter(a => a.tool.toLowerCase().includes(toolKey.toLowerCase()) || (toolKey === "dp" && a.tool === "DP Downloader"));
-        const hasRecentError = toolAlerts.some(a => a.type === "error");
-        const hasRecentWarning = toolAlerts.some(a => a.type === "warning");
-
-        let status: "operational" | "slow" | "offline" = "operational";
-        if (!isSnapchatReachable) {
-          status = "offline";
-        } else if (hasRecentError) {
-          status = "offline";
-        } else if (hasRecentWarning || avgLatency > 5000) {
-          status = "slow";
-        }
-
-        return { status, avgLatency };
-      };
-
-      const dpStats = getStatsForTool("DP Downloader", l => l.type === "profile" && l.message.includes("DP"), 350);
-      const profileStats = getStatsForTool("Profile Viewer", l => l.type === "profile" && !l.message.includes("DP"), 450);
-      const storiesStats = getStatsForTool("Story Viewer", l => l.type === "stories", 600);
-      const downloadStats = getStatsForTool("Video Downloader", l => l.type === "download", 800);
-      const bulkStats = getStatsForTool("Bulk Downloader", l => l.type === "bulk", 1200);
-
-      const tools = [
-        { id: "dp", name: "DP Downloader", status: dpStats.status, avgLatency: dpStats.avgLatency },
-        { id: "profile-viewer", name: "Profile Viewer", status: profileStats.status, avgLatency: profileStats.avgLatency },
-        { id: "stories", name: "Story Viewer", status: storiesStats.status, avgLatency: storiesStats.avgLatency },
-        { id: "download", name: "Video Downloader", status: downloadStats.status, avgLatency: downloadStats.avgLatency },
-        { id: "bulk-videos", name: "Bulk Downloader", status: bulkStats.status, avgLatency: bulkStats.avgLatency },
-      ];
-
-      let systemStatus: "operational" | "degraded" | "outage" = "operational";
-      const offlineCount = tools.filter(t => t.status === "offline").length;
-      const slowCount = tools.filter(t => t.status === "slow").length;
-
-      if (!isSnapchatReachable || offlineCount === tools.length) {
-        systemStatus = "outage";
-      } else if (offlineCount > 0 || slowCount > 0) {
-        systemStatus = "degraded";
-      }
-
-      return res.json({
-        success: true,
-        systemStatus,
-        snapchatReachable: isSnapchatReachable,
-        uptime: Math.round(process.uptime()),
-        tools,
-        alerts: systemAlerts
-      });
-    });
-
-    // =====================================================
     // ROUTE: Profile DP Downloader
     // =====================================================
     app.post("/api/dp", limiter, async (req, res) => {
@@ -911,7 +721,6 @@ async function startServer() {
       if (!configCacheBypass && metadataCache.has(cacheKey)) {
         cacheHitsCount++;
         const cached = metadataCache.get(cacheKey);
-        addActivityLog("profile", user, "success", 0, `Served HD DP for @${user} from cache.`);
         return res.json(cached);
       }
       cacheMissesCount++;
@@ -953,10 +762,6 @@ async function startServer() {
           };
           metadataCache.set(cacheKey, result);
           const latency = Date.now() - start;
-          addActivityLog("profile", user, "success", latency, `Successfully resolved HD DP for @${user} in ${latency}ms.`);
-          if (latency > 5000) {
-            addSystemAlert("warning", "DP Downloader", `Slow response resolving HD DP for username '${maskSensitiveInfo(user)}' (took ${latency}ms)`);
-          }
           return res.json(result);
         }
       } catch (err: any) {
@@ -1025,15 +830,9 @@ async function startServer() {
 
         metadataCache.set(cacheKey, result);
         const latency = Date.now() - start;
-        addActivityLog("profile", user, "success", latency, `Successfully resolved HD DP for @${user} in ${latency}ms (Promise Fallback).`);
-        if (latency > 5000) {
-          addSystemAlert("warning", "DP Downloader", `Slow response resolving HD DP for username '${maskSensitiveInfo(user)}' via fallback (took ${latency}ms)`);
-        }
         return res.json(result);
       } catch {
         const latency = Date.now() - start;
-        addActivityLog("profile", user, "failed", latency, `Failed to resolve HD DP for @${user}. Profile private or unavailable.`);
-        addSystemAlert("error", "DP Downloader", `Failed to resolve HD DP for username '${maskSensitiveInfo(user)}'. Profile private or unavailable.`);
         return res.status(404).json({ error: `The username "${user}" was not found or the profile is private. Please check the username and try again.` });
       }
     });
@@ -1165,7 +964,6 @@ async function startServer() {
           };
 
           const latency = Date.now() - start;
-          addActivityLog("stories", info.username || username || "anonymous", "success", latency, `[${toolName}] Resolved direct story link in ${latency}ms.`);
           return res.json(result);
         }
 
@@ -1328,7 +1126,6 @@ async function startServer() {
           };
 
           const latency = Date.now() - start;
-          addActivityLog("stories", username, "success", latency, `[${toolName}] Scraped ${totalStoriesCount} stories in ${latency}ms.`);
           return res.json(result);
         }
 
@@ -1336,7 +1133,6 @@ async function startServer() {
       } catch (err: any) {
         const latency = Date.now() - start;
         console.error(`[${toolName}] failed for @${username}:`, err.message);
-        addActivityLog("stories", username || "anonymous", "failed", latency, `[${toolName}] Failed: ${err.message}`);
         return res.status(404).json({ error: `No public stories found for ${isDirectStoryLink ? rawInput : `@${username}`}.` });
       }
     }
@@ -1461,10 +1257,6 @@ async function startServer() {
 
           metadataCache.set(cacheKey, result);
           const latency = Date.now() - start;
-          addActivityLog("stories", info.username || username || "anonymous", "success", latency, `Successfully resolved story link for @${info.username || username || "anonymous"} in ${latency}ms.`);
-          if (latency > 5000) {
-            addSystemAlert("warning", "Story Viewer", `Slow response resolving story link for '${maskSensitiveInfo(info.username || username || "anonymous")}' (took ${latency}ms)`);
-          }
           return res.json(result);
         }
 
@@ -1602,23 +1394,15 @@ async function startServer() {
           
           metadataCache.set(cacheKey, result);
           const latency = Date.now() - start;
-          addActivityLog("stories", username, "success", latency, `Successfully scraped ${stories.length} stories for @${username} in ${latency}ms.`);
-          if (latency > 5000) {
-            addSystemAlert("warning", "Story Viewer", `Slow response scraping stories for username '${maskSensitiveInfo(username)}' (took ${latency}ms)`);
-          }
           return res.json(result);
         }
       } catch (err: any) {
         const latency = Date.now() - start;
         console.error(`[Stories] failed for ${isDirectStoryLink ? rawInput : `@${username}`}:`, err.message);
-        addActivityLog("stories", username || "anonymous", "failed", latency, `Failed to resolve stories: ${err.message}`);
-        addSystemAlert("error", "Story Viewer", `Failed to resolve stories for '${maskSensitiveInfo(isDirectStoryLink ? rawInput : (username || "anonymous"))}': ${err.message}`);
         return res.status(404).json({ error: `No public stories found for ${isDirectStoryLink ? rawInput : `@${username}`}.` });
       }
 
       const latency = Date.now() - start;
-      addActivityLog("stories", username || "anonymous", "failed", latency, `No public stories found.`);
-      addSystemAlert("error", "Story Viewer", `No public stories found for '${maskSensitiveInfo(isDirectStoryLink ? rawInput : (username || "anonymous"))}'.`);
       return res.status(404).json({ error: `No public stories found for ${isDirectStoryLink ? rawInput : `@${username}`}.` });
     });
 
@@ -2407,7 +2191,6 @@ async function startServer() {
         if (cached) {
           res.setHeader("X-Cache", "HIT");
           cacheHitsCount++;
-          addActivityLog("profile", username, "success", 0, `Served @${username} profile from cache (Cache Bypass: OFF).`);
           return res.json(cached);
         }
       }
@@ -2421,8 +2204,6 @@ async function startServer() {
 
         if (!profile) {
           const latency = Date.now() - start;
-          addActivityLog("profile", username, "failed", latency, `Profile @${username} not found or is private.`);
-          addSystemAlert("error", "Profile Viewer", `Failed to resolve profile for username '${maskSensitiveInfo(username)}'. Profile private or unavailable.`);
           return res.status(404).json({
             error: `The profile "@${username}" was not found or is not publicly accessible. Please verify the username and try again.`,
           });
@@ -2460,15 +2241,9 @@ async function startServer() {
 
         metadataCache.set(cacheKey, result);
         const latency = Date.now() - start;
-        addActivityLog("profile", profile.username, "success", latency, `Successfully viewed profile @${profile.username} (${profile.subscribers || 0} subscribers).`);
-        if (latency > 5000) {
-          addSystemAlert("warning", "Profile Viewer", `Slow response viewing profile for username '${maskSensitiveInfo(profile.username)}' (took ${latency}ms)`);
-        }
         return res.json(result);
       } catch (err: any) {
         const latency = Date.now() - start;
-        addActivityLog("profile", username, "failed", latency, `Failed to view profile @${username}: ${err.message}`);
-        addSystemAlert("error", "Profile Viewer", `Error fetching profile for username '${maskSensitiveInfo(username)}': ${err.message}`);
         console.error(`[ProfileViewer] error for @${username}:`, err?.message);
         return res.status(500).json({
           error: "Unable to fetch the profile. The profile may be private, unavailable, or the API service is temporarily unavailable. Please try again later.",
@@ -2526,7 +2301,6 @@ async function startServer() {
         if (cached) {
           res.setHeader("X-Cache", "HIT");
           cacheHitsCount++;
-          addActivityLog("download", extractedUsername || "anonymous", "success", 0, `Served download link from cache.`);
           return res.json(cached);
         }
       }
@@ -2548,10 +2322,6 @@ async function startServer() {
           cheerioUsageCount++;
           metadataCache.set(cacheKey, scrapedResult);
           const latency = Date.now() - start;
-          addActivityLog("download", scrapedResult.username || extractedUsername || "anonymous", "success", latency, `Successfully resolved download link natively for @${scrapedResult.username || extractedUsername || "anonymous"} in ${latency}ms.`);
-          if (latency > 5000) {
-            addSystemAlert("warning", "Video Downloader", `Slow response downloading video natively for URL '${maskSensitiveInfo(url)}' (took ${latency}ms)`);
-          }
           return res.json(scrapedResult);
         }
 
@@ -2618,15 +2388,9 @@ async function startServer() {
 
         metadataCache.set(cacheKey, result);
         const latency = Date.now() - start;
-        addActivityLog("download", finalUsername || "anonymous", "success", latency, `Successfully resolved download stream via yt-dlp for @${finalUsername || "anonymous"} in ${latency}ms.`);
-        if (latency > 5000) {
-          addSystemAlert("warning", "Video Downloader", `Slow response downloading video via yt-dlp fallback for URL '${maskSensitiveInfo(url)}' (took ${latency}ms)`);
-        }
         return res.json(result);
       } catch (err: any) {
         const latency = Date.now() - start;
-        addActivityLog("download", extractedUsername || "anonymous", "failed", latency, `Failed to resolve download stream: ${err.message}`);
-        addSystemAlert("error", "Video Downloader", `Error downloading video for URL '${maskSensitiveInfo(url)}': ${err.message}`);
         console.error("[Download Error]", err.message);
         return res.status(400).json({
           error: "Unable to download video. The video link may be invalid, expired, or the content is not publicly available. Please verify the link and try again.",
@@ -2924,7 +2688,6 @@ async function startServer() {
 
           if (validResults.length === 0) {
             const latency = Date.now() - start;
-            addSystemAlert("error", "Bulk Downloader", `No public bulk videos found for any of the provided accounts: ${rawInput}`);
             return res.status(404).json({
               error: `No public videos found for any of the entered profiles (${parts.join(", ")}). The profiles might be private or have no public content.`
             });
@@ -2980,11 +2743,9 @@ async function startServer() {
           };
 
           const latency = Date.now() - start;
-          addActivityLog("bulk", compositeUsername, "success", latency, `Successfully extracted bulk media for ${parts.length} accounts (${aggregatedStories.length} snaps total) in ${latency}ms.`);
           return res.json(result);
         } catch (err: any) {
           const latency = Date.now() - start;
-          addActivityLog("bulk", "multiple", "failed", latency, `Failed to fetch bulk media for multiple accounts: ${err.message}`);
           return res.status(500).json({ error: "Failed to download videos from multiple accounts." });
         } finally {
           activeTasks -= parts.length;
@@ -3115,7 +2876,6 @@ async function startServer() {
         if (cached) {
           res.setHeader("X-Cache", "HIT");
           cacheHitsCount++;
-          addActivityLog("bulk", username, "success", 0, `Served @${username} bulk media from cache.`);
           return res.json(cached);
         }
       }
@@ -3253,7 +3013,6 @@ async function startServer() {
           }
           console.log(`[Bulk Videos] No public videos scraped for @${username}. Returning 404.`);
           const latency = Date.now() - start;
-          addSystemAlert("error", "Bulk Downloader", `No public bulk videos found for username '${maskSensitiveInfo(username)}'.`);
           return res.status(404).json({
             error: `No public videos (stories, spotlights, or highlights) found for the profile "@${username}". The profile might be private or have no public content.`
           });
@@ -3294,10 +3053,6 @@ async function startServer() {
 
         metadataCache.set(cacheKey, result);
         const latency = Date.now() - start;
-        addActivityLog("bulk", username, "success", latency, `Successfully extracted bulk media for @${username} (${videos.length} snaps) in ${latency}ms.`);
-        if (latency > 5000) {
-          addSystemAlert("warning", "Bulk Downloader", `Slow response extracting bulk media for username '${maskSensitiveInfo(username)}' (took ${latency}ms)`);
-        }
         return res.json(result);
       } catch (err: any) {
         if (fallbackDirectResult) {
@@ -3305,8 +3060,6 @@ async function startServer() {
           return res.json(fallbackDirectResult);
         }
         const latency = Date.now() - start;
-        addActivityLog("bulk", username || "anonymous", "failed", latency, `Failed to fetch bulk media: ${err.message}`);
-        addSystemAlert("error", "Bulk Downloader", `Error fetching bulk media for username '${maskSensitiveInfo(username || "anonymous")}': ${err.message}`);
         console.error("[Bulk Videos Error]", err.message);
         return res.status(400).json({
           error: "Unable to fetch videos. The profile may be private or unavailable.",
@@ -3561,347 +3314,6 @@ async function startServer() {
     });
 
     // =====================================================
-    // Dynamic SEO Auditing Function
-    // =====================================================
-    let lastSeoAuditTime = 0;
-    let cachedSeoAuditResult: any = null;
-
-    function runSeoAudit(): any {
-      const now = Date.now();
-      if (cachedSeoAuditResult && (now - lastSeoAuditTime < 15000)) {
-        return cachedSeoAuditResult;
-      }
-
-      const indexHtmlPath = path.join(PROJECT_ROOT, "index.html");
-      let score = 0;
-      const auditDetails: any[] = [];
-
-      try {
-        if (!fs.existsSync(indexHtmlPath)) {
-          return { score: 0, details: [{ name: "Index.html File", status: "fail", score: 0, description: "index.html does not exist in project root" }] };
-        }
-
-        const html = fs.readFileSync(indexHtmlPath, "utf-8");
-        const $ = cheerio.load(html);
-
-        // 1. Title Tag
-        const title = $("title").text();
-        if (title) {
-          const len = title.length;
-          if (len >= 40 && len <= 80) {
-            score += 10;
-            auditDetails.push({ name: "Title Tag", status: "pass", score: 10, description: `Title is perfect (${len} chars): "${title}"` });
-          } else {
-            score += 6;
-            auditDetails.push({ name: "Title Tag", status: "warning", score: 6, description: `Title is too ${len < 40 ? "short" : "long"} (${len} chars, recommended 45-75)` });
-          }
-        } else {
-          auditDetails.push({ name: "Title Tag", status: "fail", score: 0, description: "Title tag is missing!" });
-        }
-
-        // 2. Meta Description
-        const metaDesc = $('meta[name="description"]').attr("content");
-        if (metaDesc) {
-          const len = metaDesc.length;
-          if (len >= 100 && len <= 200) {
-            score += 10;
-            auditDetails.push({ name: "Meta Description", status: "pass", score: 10, description: `Meta description length is excellent (${len} chars)` });
-          } else {
-            score += 6;
-            auditDetails.push({ name: "Meta Description", status: "warning", score: 6, description: `Description is too ${len < 100 ? "short" : "long"} (${len} chars, recommended 120-160)` });
-          }
-        } else {
-          auditDetails.push({ name: "Meta Description", status: "fail", score: 0, description: "Meta description tag is missing!" });
-        }
-
-        // 3. Robots
-        const robots = $('meta[name="robots"]').attr("content");
-        if (robots) {
-          score += 10;
-          auditDetails.push({ name: "Robots Tag", status: "pass", score: 10, description: `Robots tag configured: "${robots}"` });
-        } else {
-          auditDetails.push({ name: "Robots Tag", status: "fail", score: 0, description: "Robots meta tag is missing (critical for crawler guidance)" });
-        }
-
-        // 4. Canonical Link
-        const canonical = $('link[rel="canonical"]').attr("href");
-        if (canonical) {
-          score += 10;
-          auditDetails.push({ name: "Canonical URL", status: "pass", score: 10, description: `Canonical link configured: "${canonical}"` });
-        } else {
-          auditDetails.push({ name: "Canonical URL", status: "fail", score: 0, description: "Canonical link is missing (causes duplicate content risk)" });
-        }
-
-        // 5. OpenGraph Tags
-        const ogTitle = $('meta[property="og:title"]').attr("content");
-        const ogImage = $('meta[property="og:image"]').attr("content");
-        const ogUrl = $('meta[property="og:url"]').attr("content");
-        if (ogTitle && ogImage && ogUrl) {
-          score += 15;
-          auditDetails.push({ name: "OpenGraph Metadata", status: "pass", score: 15, description: "Full OpenGraph protocol configured (og:title, og:image, og:url)" });
-        } else {
-          score += 5;
-          auditDetails.push({ name: "OpenGraph Metadata", status: "warning", score: 5, description: "Some OpenGraph tags are missing (recommended for rich social cards)" });
-        }
-
-        // 6. Twitter Cards
-        const twitterCard = $('meta[name="twitter:card"]').attr("content");
-        const twitterTitle = $('meta[name="twitter:title"]').attr("content");
-        if (twitterCard && twitterTitle) {
-          score += 10;
-          auditDetails.push({ name: "Twitter Cards", status: "pass", score: 10, description: "Twitter card metadata is fully configured" });
-        } else {
-          score += 3;
-          auditDetails.push({ name: "Twitter Cards", status: "warning", score: 3, description: "Twitter meta tags are missing or incomplete" });
-        }
-
-        // 7. Schema Markup (structured JSON-LD)
-        let hasSchema = false;
-        $('script[type="application/ld+json"]').each((_, el) => {
-          if ($(el).html()) hasSchema = true;
-        });
-        if (hasSchema) {
-          score += 15;
-          auditDetails.push({ name: "JSON-LD Schema Markup", status: "pass", score: 15, description: "Structured Schema.org data found in index.html" });
-        } else {
-          auditDetails.push({ name: "JSON-LD Schema Markup", status: "fail", score: 0, description: "No structured JSON-LD schemas found (important for rich snippets)" });
-        }
-
-        // 8. Viewport Tag
-        const viewport = $('meta[name="viewport"]').attr("content");
-        if (viewport) {
-          score += 10;
-          auditDetails.push({ name: "Mobile Viewport", status: "pass", score: 10, description: "Responsive viewport configured for mobile compatibility" });
-        } else {
-          auditDetails.push({ name: "Mobile Viewport", status: "fail", score: 0, description: "Mobile viewport meta tag is missing (ruins responsiveness)" });
-        }
-
-        // 9. Semantic HTML Elements
-        const h1Count = $("h1").length;
-        const navCount = $("nav, header").length;
-        const footerCount = $("footer").length;
-        if (h1Count === 1 && (navCount > 0 || footerCount > 0)) {
-          score += 5;
-          auditDetails.push({ name: "Semantic Structure", status: "pass", score: 5, description: "Perfect header/footer/single H1 tag hierarchy detected" });
-        } else {
-          score += 2;
-          auditDetails.push({ name: "Semantic Structure", status: "warning", score: 2, description: `H1 tags count is ${h1Count} (recommended exactly 1 for SEO)` });
-        }
-
-        // 10. DNS Prefetch / Preconnect Links
-        const preconnect = $('link[rel="preconnect"], link[rel="dns-prefetch"]').length;
-        if (preconnect > 0) {
-          score += 5;
-          auditDetails.push({ name: "Preconnect Optimization", status: "pass", score: 5, description: `${preconnect} speed optimization preconnect links found` });
-        } else {
-          score += 2;
-          auditDetails.push({ name: "Preconnect Optimization", status: "warning", score: 2, description: "No preconnect links found for assets/Google Fonts" });
-        }
-
-      } catch (err: any) {
-        console.error("SEO Audit Error:", err.message);
-      }
-
-      // Normalize final score to a maximum of 100%
-      const finalScore = Math.max(0, Math.min(100, score));
-      cachedSeoAuditResult = {
-        score: finalScore,
-        details: auditDetails
-      };
-      lastSeoAuditTime = now;
-      return cachedSeoAuditResult;
-    }
-
-    // =====================================================
-    // ROUTE: Get/Set Admin Interactive Configurations
-    // =====================================================
-    app.get("/api/admin/config", (req, res) => {
-      const headerPasscode = req.headers["x-admin-passcode"];
-      const envPasscode = process.env.DASHBOARD_PASSCODE || "1423";
-      if (headerPasscode !== envPasscode) {
-        return res.status(401).json({ error: "Unauthorized: Invalid developer passcode." });
-      }
-      return res.json({
-        cacheBypass: configCacheBypass,
-        ytdlpPriority: configYtdlpPriority,
-        scraperTimeout: configScraperTimeout
-      });
-    });
-
-    app.post("/api/admin/config", (req, res) => {
-      const headerPasscode = req.headers["x-admin-passcode"];
-      const envPasscode = process.env.DASHBOARD_PASSCODE || "1423";
-      if (headerPasscode !== envPasscode) {
-        return res.status(401).json({ error: "Unauthorized: Invalid developer passcode." });
-      }
-      const { cacheBypass, ytdlpPriority, scraperTimeout, simulateLog } = req.body;
-      
-      if (cacheBypass !== undefined) configCacheBypass = !!cacheBypass;
-      if (ytdlpPriority !== undefined) configYtdlpPriority = !!ytdlpPriority;
-      if (scraperTimeout !== undefined && typeof scraperTimeout === "number") {
-        configScraperTimeout = Math.max(1000, Math.min(20000, scraperTimeout));
-      }
-
-      // Support manual simulated log generation from developer triggers
-      if (simulateLog) {
-        const types: Array<ActivityLog["type"]> = ["download", "stories", "profile", "bulk"];
-        const users = ["mahobaloch29683", "kyliejenner", "bellahadid", "arianagrande", "cristiano", "leomessi"];
-        const statusList: Array<ActivityLog["status"]> = ["success", "success", "success", "failed"];
-        const selectedType = types[Math.floor(Math.random() * types.length)];
-        const selectedUser = users[Math.floor(Math.random() * users.length)];
-        const selectedStatus = statusList[Math.floor(Math.random() * statusList.length)];
-        const latency = Math.floor(Math.random() * 900) + 150;
-        
-        let msg = "";
-        if (selectedStatus === "success") {
-          msg = `Simulated scrape for @${selectedUser} succeeded via ${selectedType === "download" ? "Cheerio/NextJS" : "JSON schema"} (Latency: ${latency}ms)`;
-        } else {
-          msg = `Simulated API resolver for @${selectedUser} timed out after ${configScraperTimeout}ms (Fallback: yt-dlp activated)`;
-        }
-        addActivityLog("simulated", selectedUser, selectedStatus, latency, msg);
-      }
-
-      return res.json({
-        success: true,
-        config: {
-          cacheBypass: configCacheBypass,
-          ytdlpPriority: configYtdlpPriority,
-          scraperTimeout: configScraperTimeout
-        }
-      });
-    });
-
-    // =====================================================
-    // ROUTE: Verify Developer Passcode (Private / Only Me)
-    // =====================================================
-    app.post("/api/admin/verify", (req, res) => {
-      const { passcode } = req.body;
-      const envPasscode = process.env.DASHBOARD_PASSCODE || "1423";
-      if (passcode === envPasscode) {
-        return res.json({ success: true });
-      }
-      return res.status(401).json({ error: "Invalid developer passcode." });
-    });
-
-    // =====================================================
-    // ROUTE: Developer System stats & SEO Diagnostic Audit
-    // =====================================================
-    app.get("/api/admin/stats", (req, res) => {
-      try {
-        const headerPasscode = req.headers["x-admin-passcode"];
-        const envPasscode = process.env.DASHBOARD_PASSCODE || "1423";
-        if (headerPasscode !== envPasscode) {
-          return res.status(401).json({ error: "Unauthorized: Invalid developer passcode." });
-        }
-
-        const systemUptime = process.uptime();
-        const freeMem = os.freemem();
-        const totalMem = os.totalmem();
-        const usedMem = totalMem - freeMem;
-        const memUsagePercentage = Math.round((usedMem / totalMem) * 100);
-
-        // CPU load calculation (instantaneous delta)
-        const cpuUsage = currentCpuUsage;
-        const cpus = os.cpus();
-
-        // Package integrity status
-        let dependencies: any[] = [];
-        try {
-          const packageJsonPath = path.join(PROJECT_ROOT, "package.json");
-          const pjson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-          dependencies = Object.keys(pjson.dependencies || {}).map((name) => {
-            return {
-              name,
-              version: pjson.dependencies[name],
-              status: "Active",
-              type: ["react", "react-dom", "vite"].includes(name) ? "Frontend" : "Backend"
-            };
-          });
-        } catch (pkgErr: any) {
-          console.error("Stats package.json read failed:", pkgErr.message);
-          dependencies = [
-            { name: "react", version: "^19.0.1", status: "Active", type: "Frontend" },
-            { name: "react-dom", version: "^19.0.1", status: "Active", type: "Frontend" },
-            { name: "vite", version: "^6.2.3", status: "Active", type: "Frontend" },
-            { name: "express", version: "^4.21.2", status: "Active", type: "Backend" },
-            { name: "cheerio", version: "^1.2.0", status: "Active", type: "Backend" },
-            { name: "axios", version: "^1.16.0", status: "Active", type: "Backend" },
-            { name: "yt-dlp-wrap", version: "^2.3.12", status: "Active", type: "Backend" }
-          ];
-        }
-
-        // Active tools operational status
-        const toolsStatus = [
-          { id: "profile-viewer", name: "Snapchat Profile Viewer", status: "Active (Fast)", description: "Direct NextJS scraping engine running cleanly." },
-          { id: "video-downloader", name: "Snapchat Video Downloader", status: "Active (Fast)", description: "Cheerio native fallback enabled, yt-dlp backup active." },
-          { id: "spotlight-downloader", name: "Spotlight Video Downloader", status: "Active (Fast)", description: "High performance scrape priority in place." },
-          { id: "story-viewer", name: "Story Viewer", status: "Active (Fast)", description: "Bypasses metadata caching to prevent link expiration." },
-          { id: "bulk-downloader", name: "Bulk Profile Media Downloader", status: "Active (Fast)", description: "Cheerio JSON schema and highlight scrapers fully functional." }
-        ];
-
-        // Average Latency
-        const avgLatency = latencyHistory.length > 0 
-          ? Math.round(latencyHistory.reduce((a, b) => a + b, 0) / latencyHistory.length) 
-          : 85; // default fallback metric in ms
-
-        return res.json({
-          uptime: systemUptime,
-          memory: {
-            total: totalMem,
-            free: freeMem,
-            used: usedMem,
-            percentage: memUsagePercentage,
-            process: process.memoryUsage().heapUsed
-          },
-          cpu: {
-            usage: cpuUsage,
-            cores: cpus.length,
-            model: cpus[0]?.model || "Intel/AMD Processor"
-          },
-          traffic: {
-            totalRequests,
-            successCount: successRequestsCount,
-            failedCount: failedRequestsCount,
-            cacheHits: cacheHitsCount,
-            cacheMisses: cacheMissesCount,
-            avgLatency,
-            cheerioUsage: cheerioUsageCount,
-            ytdlpUsage: ytdlpUsageCount,
-            latencyHistory: latencyHistory.length > 0 ? latencyHistory : [80, 85, 90, 75, 110, 95, 80, 85, 100, 90]
-          },
-          reachability: {
-            snapchat: isSnapchatReachable ? "Active" : "Blocked"
-          },
-          dependencies,
-          tools: toolsStatus,
-          activeTasks,
-          activityLogs,
-          config: {
-            cacheBypass: configCacheBypass,
-            ytdlpPriority: configYtdlpPriority,
-            scraperTimeout: configScraperTimeout
-          }
-        });
-      } catch (err: any) {
-        console.error("STATS ENDPOINT FAILED SEVERELY:", err);
-        return res.status(500).json({ 
-          error: "Internal server error reading statistics",
-          message: err.message,
-          uptime: process.uptime(),
-          memory: { percentage: 50 },
-          cpu: { usage: 20 },
-          traffic: { totalRequests: 0, avgLatency: 85, latencyHistory: [85, 85, 85] },
-          reachability: { snapchat: "Active" },
-          dependencies: [],
-          tools: [],
-          activeTasks: 0,
-          activityLogs: [],
-          config: { cacheBypass: false, ytdlpPriority: false, scraperTimeout: 5000 }
-        });
-      }
-    });
-
-    // =====================================================
     // Vite Dev / Production Static
     // =====================================================
     if (process.env.NODE_ENV !== "production") {
@@ -3914,12 +3326,26 @@ async function startServer() {
     } else {
       const distPath = path.join(PROJECT_ROOT, "dist");
       app.use(express.static(distPath, {
-        maxAge: "1d",
         etag: true,
+        setHeaders: (res, filePath) => {
+          const normalizedPath = filePath.split(path.sep).join("/");
+          if (normalizedPath.includes("/assets/")) {
+            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+            return;
+          }
+          if (filePath.endsWith(".html")) {
+            res.setHeader("Cache-Control", "no-cache");
+            return;
+          }
+          if (/\.(png|jpg|jpeg|gif|webp|svg|ico|txt|xml)$/i.test(filePath)) {
+            res.setHeader("Cache-Control", "public, max-age=604800");
+          }
+        },
       }));
-      app.get("*", (req, res) =>
-        res.sendFile(path.join(distPath, "index.html"))
-      );
+      app.get("*", (req, res) => {
+        res.setHeader("Cache-Control", "no-cache");
+        res.sendFile(path.join(distPath, "index.html"));
+      });
     }
 
     // Global error handler

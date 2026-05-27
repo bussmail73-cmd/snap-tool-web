@@ -2,7 +2,6 @@ import {
   Ghost, 
   History, 
   Download, 
-  Search, 
   Video, 
   UserCircle 
 } from "lucide-react";
