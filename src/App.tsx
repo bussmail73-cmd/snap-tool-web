@@ -642,7 +642,7 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
   return (
     <>
       <Helmet>
-        <title>{tool.title} | Getinbex Anonymous Tools</title>
+        <title>{tool.title} | Getinbex Free Tools</title>
         <meta name="description" content={tool.description} />
         <link rel="canonical" href={`https://getinbex.com${tool.path}`} />
         <meta property="og:title" content={`${tool.title} | Getinbex`} />
