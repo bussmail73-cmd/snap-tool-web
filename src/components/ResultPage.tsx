@@ -104,7 +104,7 @@ export default function ResultPage() {
 
   useEffect(() => {
     if (!resultData) {
-      navigate("/");
+      navigate("/", { replace: true });
       return;
     }
 
