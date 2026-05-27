@@ -16,19 +16,19 @@ export default function HowToWork({ tool }: HowToWorkProps) {
   const getMainHeading = (id: string): string => {
     switch (id) {
       case "story-viewer":
-        return "How To Work Snapchat Story Viewer Tool";
+        return "How to Use Snapchat Story Viewer Tool";
       case "profile-viewer":
-        return "How To Work Snapchat Profile Viewer Tool";
+        return "How to Use Snapchat Profile Viewer Tool";
       case "story-downloader":
-        return "How To Work Snapchat Story Downloader Tool";
+        return "How to Use Snapchat Story Downloader Tool";
       case "spotlight-downloader":
-        return "How To Work Snapchat Video Downloader Tool";
+        return "How to Use Snapchat Video Downloader Tool";
       case "video-downloader":
-        return "How To Work Snapchat Bulk Video Downloader Tool";
+        return "How to Use Snapchat Bulk Video Downloader Tool";
       case "profile-dp-downloader":
-        return "How To Work Snapchat Profile DP Downloader Tool";
+        return "How to Use Snapchat Profile DP Downloader Tool";
       default:
-        return "How To Work Snapchat Tool";
+        return "How to Use Snapchat Tool";
     }
   };
 

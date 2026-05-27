@@ -3,12 +3,20 @@ import { Link } from "react-router-dom";
 import { TOOLS } from "../constants";
 import { SNAPCHAT_BASE64 } from "./logo";
 
-function ToolsGrid() {
+interface ToolsGridProps {
+  heading?: string;
+  description?: string;
+}
+
+function ToolsGrid({
+  heading = "Our Tools",
+  description = "Explore our professional suite of Snapchat utility tools designed for a seamless and private experience."
+}: ToolsGridProps) {
   return (
     <section className="home-section" id="tools">
       <div className="home-section-header">
-        <h2>Our Tools</h2>
-        <p>Explore our professional suite of Snapchat utility tools designed for a seamless and private experience.</p>
+        <h2>{heading}</h2>
+        <p>{description}</p>
         <div className="home-tools-branding">
           <img src={SNAPCHAT_BASE64} alt="Snapchat official social media logo - the original platform for all these tools" className="home-tools-branding-image" />
           <span className="home-tools-branding-text">Snapchat</span>

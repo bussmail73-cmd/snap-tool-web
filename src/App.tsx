@@ -638,7 +638,84 @@ function ToolFAQAccordion({ tool }: { tool: Tool }) {
   );
 }
 
+function getToolSeoContent(tool: Tool) {
+  switch (tool.id) {
+    case "story-viewer":
+      return {
+        heading: "View Snapchat Stories Anonymously with Getinbex",
+        summary: "Use the Snapchat Story Viewer to open public stories in ghost mode without login, tracking, or app installation.",
+        bodyOne: "Getinbex helps you view public Snapchat stories through a fast browser-based workflow. Enter a public username or profile link, and the tool prepares active story media while keeping the experience simple, private, and account-free.",
+        bodyTwo: "The story viewer is built for users who want quick access to public stories without sending notifications, creating accounts, or installing extra software. It works smoothly on mobile and desktop browsers with a clean search-first page.",
+        subheading: "Anonymous Snapchat Story Viewing",
+        bodyThree: "Every public story request is handled through the Getinbex tool flow, so you can check available stories without signing into Snapchat. The page focuses on speed, privacy, and clear results.",
+        bodyFour: "For best results, use complete public usernames or valid profile links. Private, expired, or unavailable stories cannot be accessed by any legitimate tool."
+      };
+    case "profile-viewer":
+      return {
+        heading: "View Public Snapchat Profiles with Getinbex",
+        summary: "Use the Snapchat Profile Viewer to check public profile details, public stories, and profile information without logging in.",
+        bodyOne: "Getinbex gives you a simple way to inspect public Snapchat profile information from a browser. Enter a username or public profile link, and the tool prepares accessible profile details through a fast and private workflow.",
+        bodyTwo: "The profile viewer is designed for public content only. It helps users quickly review display names, public activity, profile media, and available account details without installing apps or creating a Snapchat account.",
+        subheading: "Private Public Profile Lookup",
+        bodyThree: "The profile lookup flow keeps the page focused on the username search experience. It supports mobile and desktop users with a clean input field, quick results, and privacy-first handling.",
+        bodyFour: "If a profile is private, removed, or unavailable, the tool will not unlock protected content. Getinbex only works with public Snapchat information."
+      };
+    case "story-downloader":
+      return {
+        heading: "Download Snapchat Stories Easily with Getinbex",
+        summary: "Use the Snapchat Story Downloader to save public stories in HD quality without login, watermark, or app installation.",
+        bodyOne: "Getinbex provides a fast way to download public Snapchat stories directly from a valid story link or username. The tool focuses on simple input, quick processing, and direct access to available story media.",
+        bodyTwo: "The story downloader is useful for saving public story clips for offline viewing, archiving, or personal access. It is browser-based, mobile-friendly, and built to avoid unnecessary steps.",
+        subheading: "Save Public Stories in HD",
+        bodyThree: "Public stories can expire quickly, so the downloader is optimized for speed. Paste the full story link or public username and let the page prepare downloadable media when available.",
+        bodyFour: "Private stories, expired stories, and restricted content cannot be downloaded by legitimate public tools. Getinbex only processes accessible public Snapchat media."
+      };
+    case "spotlight-downloader":
+      return {
+        heading: "Download Snapchat Videos Easily with Getinbex",
+        summary: "Use the Snapchat Video Downloader to save public Spotlight videos and Snapchat clips in clean MP4 quality without watermark.",
+        bodyOne: "Getinbex serves as your reliable, high-performance solution for downloading public Snapchat videos, stories, and Spotlight content. Paste a valid public video URL, and the tool prepares a direct media result whenever possible.",
+        bodyTwo: "Whether you want Snapchat Spotlight videos, public story clips, entertainment highlights, or creator media, Getinbex provides dependable results through a browser-based process that works on mobile and desktop.",
+        subheading: "Download High-Quality MP4 Videos",
+        bodyThree: "Offline video access gives you greater control over your media experience compared to streaming alone. The video downloader focuses on clean MP4 output, high-quality playback, and fast result loading.",
+        bodyFour: "For best results, use complete Snapchat public video links. Invalid, private, removed, or restricted media may not be available for download."
+      };
+    case "video-downloader":
+      return {
+        heading: "Download Snapchat Videos in Bulk with Getinbex",
+        summary: "Use the Snapchat Bulk Video Downloader to collect multiple public videos, highlights, and Spotlight clips from public links or usernames.",
+        bodyOne: "Getinbex makes bulk Snapchat video saving easier by scanning public links or usernames for available media. The page is built for users who need a faster way to collect multiple public clips without repeated manual searches.",
+        bodyTwo: "The bulk downloader keeps the process simple: paste a public video URL or username, submit it once, and review the available media list on the results page. It is designed for speed, clarity, and browser-based access.",
+        subheading: "Bulk Save Public Snapchat Videos",
+        bodyThree: "Bulk downloading works best with public accounts and valid public media links. Getinbex organizes available video results so users can save clips in a cleaner and more efficient workflow.",
+        bodyFour: "Private, expired, removed, or restricted content cannot be accessed. The tool only works with public Snapchat media that is available to process."
+      };
+    case "profile-dp-downloader":
+      return {
+        heading: "Download Snapchat Profile Pictures with Getinbex",
+        summary: "Use the Snapchat Profile DP Downloader to save public profile pictures in high resolution without login or account setup.",
+        bodyOne: "Getinbex helps users download publicly available Snapchat profile pictures through a quick username or profile-link search. The tool is designed for fast access, clean results, and high-resolution image saving where available.",
+        bodyTwo: "The DP downloader works from the browser, so there is no app installation or login required. Enter a public Snapchat username and the page prepares the available profile image for viewing or download.",
+        subheading: "Save High-Resolution Snapchat DP Images",
+        bodyThree: "Profile pictures are prepared from public account information only. The tool focuses on image clarity, mobile-friendly access, and a direct search experience for public profiles.",
+        bodyFour: "If the profile is private, unavailable, or does not expose a profile image publicly, the tool will not bypass restrictions. Getinbex only supports legitimate public content."
+      };
+    default:
+      return {
+        heading: `Use ${tool.name} with Getinbex`,
+        summary: tool.description,
+        bodyOne: "Getinbex provides fast, private, and browser-based Snapchat tools for public content. Enter a valid public link or username to begin.",
+        bodyTwo: "Each tool is built for easy use on mobile and desktop without requiring account login, app installation, or complex setup.",
+        subheading: "Fast Public Snapchat Tool",
+        bodyThree: "The workflow keeps the search page simple and focused, helping users get clear results quickly.",
+        bodyFour: "Only public and accessible Snapchat content can be processed."
+      };
+  }
+}
+
 function ToolPageRoute({ tool }: { tool: Tool }) {
+  const toolSeoContent = getToolSeoContent(tool);
+
   return (
     <>
       <Helmet>
@@ -659,7 +736,7 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
         <meta property="og:image:alt" content="Getinbex - Anonymous Snapchat Tools" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:image" content="https://getinbex.com/Logo.png" />
-        <meta name="robots" content="index, follow" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
         <script type="application/ld+json">
         {JSON.stringify({
           "@context": "https://schema.org",
@@ -687,7 +764,9 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
           "name": tool.name,
           "description": tool.description,
           "url": `https://getinbex.com${tool.path}`,
+          "image": "https://getinbex.com/Logo.png",
           "applicationCategory": "UtilityApplication",
+          "isAccessibleForFree": true,
           "offers": {
             "@type": "Offer",
             "price": "0",
@@ -782,8 +861,11 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
         highlightedWord={tool.highlightedWord}
         examples={tool.examples}
       />
-      <ToolsGrid />
       <HowToWork tool={tool} />
+      <ToolsGrid
+        heading="More Free Snapchat Tools"
+        description={`Explore more Getinbex tools after using ${tool.name} for fast, private, and free Snapchat access.`}
+      />
 
       {/* ABOUT GETINBEX SECTION - Same as Home Page */}
       <section className="home-section pt-16 pb-24">
@@ -794,33 +876,32 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
         </div>
       </section>
 
-      {/* DOWNLOAD VIDEOS EASILY WITH GETINBEX */}
       <section className="home-section mt-12 pt-16">
         <div className="home-section-header">
-          <h2>Download Videos Easily with Getinbex</h2>
+          <h2>{toolSeoContent.heading}</h2>
           <p className="text-slate-700 font-semibold max-w-2xl mx-auto text-lg leading-relaxed">
-            Your ultimate high-speed platform to download Snapchat spotlights, stories, and public highlights in crystal-clear HD quality with a single click, completely free and anonymous.
+            {toolSeoContent.summary}
           </p>
         </div>
         
         <div className="max-w-5xl mx-auto px-4 mt-8 space-y-6">
           <p className="text-left text-slate-800 text-[1.1rem] leading-relaxed font-medium">
-            Getinbex serves as your reliable, high-performance solution for downloading your favorite online videos, stories, and social media content. This trusted Snapchat media suite has helped millions of users worldwide, providing a simple and 100% anonymous method to save media from popular platforms without requiring any complex software or app installation. Our web-based tool operates smoothly on both desktop computers and mobile devices, featuring an intuitive, modern interface that streamlines the entire download process.
+            {toolSeoContent.bodyOne}
           </p>
           
           <p className="text-left text-slate-800 text-[1.1rem] leading-relaxed font-medium">
-            Whether you want Snapchat Spotlight videos, public stories, entertainment highlights, or sports shows, Getinbex provides dependable, lightning-fast results. Simply copy your desired video URL or public username, paste it into our secure download field, and watch the system fetch direct high-quality MP4 media files without adding any watermarks or overlays.
+            {toolSeoContent.bodyTwo}
           </p>
           
-          <h3 className="text-2xl font-bold text-gray-900 text-center pt-8 tracking-tight">Download High-Quality MP4 Videos</h3>
+          <h3 className="text-2xl font-bold text-gray-900 text-center pt-8 tracking-tight">{toolSeoContent.subheading}</h3>
           <div className="w-15 h-1 bg-linear-to-r from-pink-500 to-purple-500 rounded-sm mx-auto mt-2 mb-6"></div>
           
           <p className="text-left text-slate-800 text-[1.1rem] leading-relaxed font-medium">
-            Offline video access gives you greater control over your entertainment experience compared to streaming alone. Getinbex's video downloader maintains original quality standards, providing crystal-clear MP4 downloads that preserve their source resolution, frame rate, and audio clarity. Create your personal media collection with absolute confidence, knowing each download maintains its original high-definition visual excellence.
+            {toolSeoContent.bodyThree}
           </p>
           
           <p className="text-left text-slate-800 text-[1.1rem] leading-relaxed font-medium">
-            Our advanced parsing technology guarantees your saved MP4 files display the same visual excellence as their online versions. Ideal for travel situations, areas with limited internet connectivity, or users who prefer having instant offline access to their favorite content library, Getinbex offers reliable downloading capabilities you can depend on every single day.
+            {toolSeoContent.bodyFour}
           </p>
         </div>
       </section>
