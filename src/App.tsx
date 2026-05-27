@@ -446,7 +446,7 @@ export default function App() {
                     <Helmet>
                       <title>Getinbex | 100% Free Anonymous Snapchat Tools - View, Download & Explore</title>
                       <meta name="description" content="Ultimate toolset for Snapchat: View stories anonymously, download spotlight videos, lookup profiles and search usernames without watermark or registration. 100% free, no account needed." />
-                      <link rel="canonical" href="https://getinbex.com" />
+                      <link rel="canonical" href="https://getinbex.com/" />
                       <meta property="og:title" content="Getinbex | 100% Free Anonymous Snapchat Tools" />
                       <meta property="og:description" content="View stories, download spotlights, lookup profiles & search Snapchat users - all 100% anonymously and for free" />
                       <meta property="og:url" content="https://getinbex.com" />
@@ -586,6 +586,12 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
         <meta property="og:type" content="website" />
         <meta name="twitter:title" content={`${tool.title} | Getinbex`} />
         <meta name="twitter:description" content={tool.description} />
+        <meta property="og:image" content="https://getinbex.com/Logo.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Getinbex - Anonymous Snapchat Tools" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://getinbex.com/Logo.png" />
         <meta name="robots" content="index, follow" />
         <script type="application/ld+json">
         {JSON.stringify({
