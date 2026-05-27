@@ -861,11 +861,8 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
         highlightedWord={tool.highlightedWord}
         examples={tool.examples}
       />
+      <ToolsGrid />
       <HowToWork tool={tool} />
-      <ToolsGrid
-        heading="More Free Snapchat Tools"
-        description={`Explore more Getinbex tools after using ${tool.name} for fast, private, and free Snapchat access.`}
-      />
 
       {/* ABOUT GETINBEX SECTION - Same as Home Page */}
       <section className="home-section pt-16 pb-24">
