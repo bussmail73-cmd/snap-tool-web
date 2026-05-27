@@ -76,7 +76,7 @@ function Navbar() {
             </div>
 
             <Link to="/about" onClick={scrollToTop} className="text-sm font-bold text-gray-900 hover:text-snap-brand-dark transition-colors">About</Link>
-            <Link to="/contact" onClick={scrollToTop} className="text-sm font-bold text-gray-900 hover:text-snap-brand-dark transition-colors">Contact</Link>
+            <Link to="/faq" onClick={scrollToTop} className="text-sm font-bold text-gray-900 hover:text-snap-brand-dark transition-colors">FAQ</Link>
           </div>
 
           {/* Right Actions */}
@@ -139,7 +139,7 @@ function Navbar() {
               </div>
 
               <Link to="/about" onClick={scrollToTop} className="block text-sm font-bold text-gray-900 px-2">About</Link>
-              <Link to="/contact" onClick={scrollToTop} className="block text-sm font-bold text-gray-900 px-2">Contact</Link>
+              <Link to="/faq" onClick={scrollToTop} className="block text-sm font-bold text-gray-900 px-2">FAQ</Link>
             </div>
           </motion.div>
         )}
