@@ -66,6 +66,8 @@
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <!-- Security & Compliance -->
     <meta http-equiv="permissions-policy" content="geolocation=(), microphone=(), camera=(), usb=(), payment=(), midi=(), magnetometer=(), gyroscope=(), accelerometer=()" />
+    <!-- Inline sr-only: ensures SEO-only elements are hidden before any CSS loads -->
+    <style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}</style>
     <!-- JSON-LD Structured Data - Organization -->
     <script type="application/ld+json">
     {
