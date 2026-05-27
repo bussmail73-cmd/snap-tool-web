@@ -60,7 +60,7 @@ function Navbar() {
               </button>
               
               {isToolsOpen && (
-                <div className="absolute top-full -left-4 w-60 bg-white shadow-xl rounded-xl border border-gray-50 py-2 mt-0 z-50">
+                <div className="absolute top-full -left-4 w-64 bg-white shadow-xl rounded-xl border border-gray-50 py-2 mt-0 z-50">
                   {TOOLS.map((tool) => (
                     <Link
                       key={tool.id}

@@ -713,17 +713,8 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
       <ToolsGrid />
       <HowToWork tool={tool} />
 
-      {/* TOOL FAQ SECTION */}
-      <section className="home-section border-t border-gray-100 pt-16 pb-24">
-        <div className="home-section-header">
-          <h2>Frequently Asked Questions</h2>
-          <p>Got questions about using {tool.name}? Here are answers to the most common queries.</p>
-        </div>
-        <ToolFAQAccordion tool={tool} />
-      </section>
-
       {/* ABOUT GETINBEX SECTION - Same as Home Page */}
-      <section className="home-section border-t border-gray-100 pt-16 pb-24">
+      <section className="home-section pt-16 pb-24">
         <div className="home-section-header">
           <h2>About Getinbex</h2>
           <p>Getinbex is a premium online tool suite built to make social media content effortlessly accessible. Right now, it specializes in Snapchat — letting you view and download profile pictures, stories, spotlight clips, videos, and more without ever needing to sign in.</p>
@@ -731,8 +722,39 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
         </div>
       </section>
 
+      {/* DOWNLOAD VIDEOS EASILY WITH GETINBEX */}
+      <section className="home-section mt-12 pt-16">
+        <div className="home-section-header">
+          <h2>Download Videos Easily with Getinbex</h2>
+          <p className="text-slate-700 font-semibold max-w-2xl mx-auto text-lg leading-relaxed">
+            Your ultimate high-speed platform to download Snapchat spotlights, stories, and public highlights in crystal-clear HD quality with a single click, completely free and anonymous.
+          </p>
+        </div>
+        
+        <div className="max-w-5xl mx-auto px-4 mt-8 space-y-6">
+          <p className="text-left text-slate-800 text-[1.1rem] leading-relaxed font-medium">
+            Getinbex serves as your reliable, high-performance solution for downloading your favorite online videos, stories, and social media content. This trusted Snapchat media suite has helped millions of users worldwide, providing a simple and 100% anonymous method to save media from popular platforms without requiring any complex software or app installation. Our web-based tool operates smoothly on both desktop computers and mobile devices, featuring an intuitive, modern interface that streamlines the entire download process.
+          </p>
+          
+          <p className="text-left text-slate-800 text-[1.1rem] leading-relaxed font-medium">
+            Whether you want Snapchat Spotlight videos, public stories, entertainment highlights, or sports shows, Getinbex provides dependable, lightning-fast results. Simply copy your desired video URL or public username, paste it into our secure download field, and watch the system fetch direct high-quality MP4 media files without adding any watermarks or overlays.
+          </p>
+          
+          <h3 className="text-2xl font-bold text-gray-900 text-center pt-8 tracking-tight">Download High-Quality MP4 Videos</h3>
+          <div className="w-15 h-1 bg-linear-to-r from-pink-500 to-purple-500 rounded-sm mx-auto mt-2 mb-6"></div>
+          
+          <p className="text-left text-slate-800 text-[1.1rem] leading-relaxed font-medium">
+            Offline video access gives you greater control over your entertainment experience compared to streaming alone. Getinbex's video downloader maintains original quality standards, providing crystal-clear MP4 downloads that preserve their source resolution, frame rate, and audio clarity. Create your personal media collection with absolute confidence, knowing each download maintains its original high-definition visual excellence.
+          </p>
+          
+          <p className="text-left text-slate-800 text-[1.1rem] leading-relaxed font-medium">
+            Our advanced parsing technology guarantees your saved MP4 files display the same visual excellence as their online versions. Ideal for travel situations, areas with limited internet connectivity, or users who prefer having instant offline access to their favorite content library, Getinbex offers reliable downloading capabilities you can depend on every single day.
+          </p>
+        </div>
+      </section>
+
       {/* COMPARISON SECTION - Same as Home Page */}
-      <section className="home-section border-t border-gray-100 pt-16 pb-24">
+      <section className="home-section pt-16 pb-24">
         <div className="home-section-header">
           <h2>Getinbex vs the other</h2>
           <p>See how we stack up against the typical Snapchat tools you'll find elsewhere.</p>
@@ -785,6 +807,15 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
             </tr>
           </tbody>
         </table>
+      </section>
+
+      {/* TOOL FAQ SECTION */}
+      <section className="home-section pt-16 pb-24">
+        <div className="home-section-header">
+          <h2>Frequently Asked Questions</h2>
+          <p>Got questions about using {tool.name}? Here are answers to the most common queries.</p>
+        </div>
+        <ToolFAQAccordion tool={tool} />
       </section>
     </>
   );
