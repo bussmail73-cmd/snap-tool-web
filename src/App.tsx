@@ -566,6 +566,7 @@ function getToolSeoContent(tool: Tool) {
   switch (tool.id) {
     case "story-viewer":
       return {
+        seoTitle: "Free Snapchat Story Viewer - Watch Stories Anonymously | Getinbex",
         heading: "View Snapchat Stories Anonymously with Getinbex",
         summary: "Use the Snapchat Story Viewer to open public stories in ghost mode without login, tracking, or app installation.",
         bodyOne: "Getinbex helps you view public Snapchat stories through a fast browser-based workflow. Enter a public username or profile link, and the tool prepares active story media while keeping the experience simple, private, and account-free.",
@@ -576,6 +577,7 @@ function getToolSeoContent(tool: Tool) {
       };
     case "profile-viewer":
       return {
+        seoTitle: "Free Snapchat Profile Viewer - Look Up Public Profiles | Getinbex",
         heading: "View Public Snapchat Profiles with Getinbex",
         summary: "Use the Snapchat Profile Viewer to check public profile details, public stories, and profile information without logging in.",
         bodyOne: "Getinbex gives you a simple way to inspect public Snapchat profile information from a browser. Enter a username or public profile link, and the tool prepares accessible profile details through a fast and private workflow.",
@@ -586,6 +588,7 @@ function getToolSeoContent(tool: Tool) {
       };
     case "story-downloader":
       return {
+        seoTitle: "Download Snapchat Stories HD Quality - No Watermark | Getinbex",
         heading: "Download Snapchat Stories Easily with Getinbex",
         summary: "Use the Snapchat Story Downloader to save public stories in HD quality without login, watermark, or app installation.",
         bodyOne: "Getinbex provides a fast way to download public Snapchat stories directly from a valid story link or username. The tool focuses on simple input, quick processing, and direct access to available story media.",
@@ -596,6 +599,7 @@ function getToolSeoContent(tool: Tool) {
       };
     case "spotlight-downloader":
       return {
+        seoTitle: "Download Snapchat Spotlight Videos MP4 - Free & Fast | Getinbex",
         heading: "Download Snapchat Videos Easily with Getinbex",
         summary: "Use the Snapchat Video Downloader to save public Spotlight videos and Snapchat clips in clean MP4 quality without watermark.",
         bodyOne: "Getinbex serves as your reliable, high-performance solution for downloading public Snapchat videos, stories, and Spotlight content. Paste a valid public video URL, and the tool prepares a direct media result whenever possible.",
@@ -606,6 +610,7 @@ function getToolSeoContent(tool: Tool) {
       };
     case "video-downloader":
       return {
+        seoTitle: "Bulk Download Snapchat Videos - Multiple Clips at Once | Getinbex",
         heading: "Download Snapchat Videos in Bulk with Getinbex",
         summary: "Use the Snapchat Bulk Video Downloader to collect multiple public videos, highlights, and Spotlight clips from public links or usernames.",
         bodyOne: "Getinbex makes bulk Snapchat video saving easier by scanning public links or usernames for available media. The page is built for users who need a faster way to collect multiple public clips without repeated manual searches.",
@@ -616,6 +621,7 @@ function getToolSeoContent(tool: Tool) {
       };
     case "profile-dp-downloader":
       return {
+        seoTitle: "Download Snapchat Profile Pictures HD - Free DP Saver | Getinbex",
         heading: "Download Snapchat Profile Pictures with Getinbex",
         summary: "Use the Snapchat Profile DP Downloader to save public profile pictures in high resolution without login or account setup.",
         bodyOne: "Getinbex helps users download publicly available Snapchat profile pictures through a quick username or profile-link search. The tool is designed for fast access, clean results, and high-resolution image saving where available.",
@@ -626,6 +632,7 @@ function getToolSeoContent(tool: Tool) {
       };
     default:
       return {
+        seoTitle: `${tool.title} - Free Online Tool | Getinbex`,
         heading: `Use ${tool.name} with Getinbex`,
         summary: tool.description,
         bodyOne: "Getinbex provides fast, private, and browser-based Snapchat tools for public content. Enter a valid public link or username to begin.",
@@ -643,7 +650,7 @@ function ToolPageRoute({ tool }: { tool: Tool }) {
   return (
     <>
       <Helmet>
-        <title>{tool.title} | Getinbex Free Tools</title>
+        <title>{toolSeoContent.seoTitle}</title>
         <meta name="description" content={tool.description} />
         <link rel="canonical" href={`https://getinbex.com${tool.path}`} />
         <meta property="og:title" content={`${tool.title} | Getinbex`} />
