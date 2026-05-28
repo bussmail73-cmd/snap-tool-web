@@ -1,20 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from "react";
-import { Copy, CheckCircle2, ShieldCheck, ClipboardPaste, Download, Play, User, Clock, AlertCircle, Check, ChevronDown, Monitor, Zap } from "lucide-react";
+import { CheckCircle2, ClipboardPaste, AlertCircle, Check, Zap } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { validateToolInput, extractUrlFromText } from "../lib/validation";
 import { useNavigate } from "react-router-dom";
 import { TOOLS } from "../constants";
-
-interface VideoData {
-  success: boolean;
-  videoUrl: string;
-  downloadUrl: string;
-  title: string;
-  thumbnail: string;
-  duration: string;
-  uploader: string;
-  stories?: any[];
-}
 
 interface HeroSectionProps {
   toolId: string;
@@ -140,8 +129,6 @@ export default function HeroSection({ toolId, title, description, placeholder, b
     }
   }, [suggestedToolId, navigate]);
 
-  const [pasteSuccess, setPasteSuccess] = useState(false);
-
   const handlePaste = useCallback(async (e: React.MouseEvent) => {
     e.preventDefault();
     
@@ -178,11 +165,6 @@ export default function HeroSection({ toolId, title, description, placeholder, b
         setInputValue(text.trim());
         setHasError(false);
         setErrorMsg("");
-        // Show brief success indicator
-        setPasteSuccess(true);
-        setTimeout(() => {
-          if (isMounted.current) setPasteSuccess(false);
-        }, 2000);
       } else {
         setHasError(true);
         setErrorMsg("Clipboard appears to be empty. Please copy a Snapchat link first, then click Paste.");

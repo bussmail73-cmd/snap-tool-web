@@ -3,8 +3,6 @@
  * Snapchat URL patterns and tool validation logic
  */
 
-const SNAPCHAT_USERNAME_REGEX = /^[a-zA-Z0-9._]{3,30}$/;
-
 /**
  * Extracts a URL from a text string if one is embedded inside other text (e.g. from mobile share messages).
  */
@@ -25,35 +23,7 @@ export function extractUrlFromText(input: string): string {
   return trimmed;
 }
 
-export const SNAP_PATTERNS = {
-  // Spotlight: /spotlight/ anywhere (snapchat.com/spotlight/ID, snap.com/spotlight/ID)
-  SPOTLIGHT: /(?:snapchat|snap)\.com\/.*spotlight\//i,
-  
-  // Story: snapchat.com/s/ID or snapchat.com/add/USER/story/ID or snap.com equivalents
-  STORY: /(?:snapchat|snap)\.com\/s\/[a-zA-Z0-9_-]+|(?:snapchat|snap)\.com\/add\/@?[a-zA-Z0-9._-]+\/story\/[a-zA-Z0-9_-]+/i,
-  
-  // Profile: snapchat.com/add/USER, snapchat.com/@USER, or snap.com equivalents
-  PROFILE: /(?:snapchat|snap)\.com\/(?:add\/@?[a-zA-Z0-9._-]+|@?[a-zA-Z0-9._-]+)(?!\/spotlight\/)/i,
-  
-  // General Snapchat URL
-  GENERAL: /(?:snapchat|snap)\.com\/|t\.snapchat\.com\//i,
-};
-
 export type ToolId = "spotlight-downloader" | "video-downloader" | "story-downloader" | "story-viewer" | "profile-viewer" | "profile-dp-downloader";
-
-function isSnapchatUrl(value: string): boolean {
-  return /(?:snapchat|snap)\.com/i.test(value) || /t\.snapchat\.com/i.test(value);
-}
-
-function isSnapchatUsername(value: string): boolean {
-  const trimmed = value.trim().replace(/^[@#]/, "");
-  return SNAPCHAT_USERNAME_REGEX.test(trimmed);
-}
-
-function isSnapchatProfileUrl(value: string): boolean {
-  const normalized = value.trim().replace(/^https?:\/\//i, "").replace(/^www\./i, "").split(/[?#]/)[0];
-  return /^(?:snapchat|snap)\.com\/(?:add\/@?[a-zA-Z0-9._]{3,30}|@?[a-zA-Z0-9._]{3,30})(?:\/|$)/i.test(normalized) || /^t\.snapchat\.com\/[a-zA-Z0-9_-]+/i.test(normalized);
-}
 
 export interface ValidationResult {
   isValid: boolean;
@@ -65,7 +35,7 @@ export interface ValidationResult {
  * Validates input based on the active tool
  * ULTRA FLEXIBLE - Accepts any Snapchat-related input
  */
-export function validateToolInput(toolId: string, input: string): ValidationResult {
+export function validateToolInput(_toolId: string, input: string): ValidationResult {
   const extracted = extractUrlFromText(input);
   const value = extracted.trim();
   

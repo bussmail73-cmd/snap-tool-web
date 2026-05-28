@@ -4,13 +4,12 @@ import {
   Download, Play, Pause, Volume2, VolumeX, 
   RotateCcw, RotateCw, ChevronDown, Check, 
   ArrowLeft, User, ShieldCheck, CheckCircle2,
-  Video, ExternalLink, Lock, Users, Grid3x3, Star, BarChart3, Search, TrendingUp, FileJson, File,
+  Video, ExternalLink, Lock, Users, Grid3x3, Star, BarChart3, Search, TrendingUp, FileJson,
   Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Helmet } from "react-helmet-async";
 import ToolsGrid from "./ToolsGrid";
-import { TOOLS } from "../constants";
 
 interface VideoData {
   success: boolean;
@@ -65,13 +64,10 @@ export default function ResultPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [selectedExportFormat, setSelectedExportFormat] = useState("PDF");
-  const [isExporting, setIsExporting] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [selectedStory, setSelectedStory] = useState<any>(null);
   const [bulkVideoType, setBulkVideoType] = useState<'spotlights' | 'highlights'>('spotlights');
   const [storyTabType, setStoryTabType] = useState<'videos' | 'photos'>('videos');
-  const [videosPerPage] = useState(6);
-  const [currentPage, setCurrentPage] = useState(1);
   const [visibleSpotlights, setVisibleSpotlights] = useState(10);
   const [visibleHighlights, setVisibleHighlights] = useState(10);
   const [visibleStoryVideos, setVisibleStoryVideos] = useState(10);
@@ -97,11 +93,6 @@ export default function ResultPage() {
     () => (hasStories ? activeStory?.type === "video" : Boolean(resultData?.videoUrl)),
     [hasStories, activeStory, resultData?.videoUrl]
   );
-  const previewTitle = useMemo(
-    () => (hasStories ? activeStory?.title || `Story ${resultData?.stories?.findIndex((item) => item === activeStory) + 1}` : cleanTitle),
-    [hasStories, activeStory, cleanTitle, resultData?.stories]
-  );
-
   useEffect(() => {
     if (!resultData) {
       navigate("/", { replace: true });
@@ -203,7 +194,6 @@ export default function ResultPage() {
   };
 
   const handleExport = (format: string) => {
-    setIsExporting(true);
     const timestamp = new Date().toLocaleDateString('ur-PK').replace(/\//g, '-');
     const filename = `${resultData?.uploader || resultData?.displayName || 'profile'}-profile-${timestamp}`;
     
@@ -326,8 +316,6 @@ For inquiries, visit: ${exportData.websiteUrl}
       const csvContent = csvRows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\r\n');
       createDownloadLink('data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent), `${filename}.csv`);
     }
-
-    setIsExporting(false);
   };
 
   const formatNumber = (value: number | undefined | null) =>

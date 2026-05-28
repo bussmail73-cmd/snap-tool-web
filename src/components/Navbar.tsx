@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   ChevronDown, 
-  Ghost,
   Menu,
   X
 } from "lucide-react";
@@ -76,6 +75,7 @@ function Navbar() {
             </div>
 
             <Link to="/about" onClick={scrollToTop} className="text-sm font-bold text-gray-900 hover:text-snap-brand-dark transition-colors">About</Link>
+            <Link to="/blog" onClick={scrollToTop} className="text-sm font-bold text-gray-900 hover:text-snap-brand-dark transition-colors">Blog</Link>
             <Link to="/faq" onClick={scrollToTop} className="text-sm font-bold text-gray-900 hover:text-snap-brand-dark transition-colors">FAQ</Link>
           </div>
 
@@ -139,6 +139,7 @@ function Navbar() {
               </div>
 
               <Link to="/about" onClick={scrollToTop} className="block text-sm font-bold text-gray-900 px-2">About</Link>
+              <Link to="/blog" onClick={scrollToTop} className="block text-sm font-bold text-gray-900 px-2">Blog</Link>
               <Link to="/faq" onClick={scrollToTop} className="block text-sm font-bold text-gray-900 px-2">FAQ</Link>
             </div>
           </motion.div>
