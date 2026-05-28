@@ -388,39 +388,35 @@
 
 /* Blog Card Styles */
 .blog-posts-grid {
-  @apply grid gap-8 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 max-w-6xl mx-auto;
+  @apply grid gap-6 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 max-w-5xl mx-auto;
 }
 
 .blog-card {
-  @apply bg-white rounded-xl border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-slate-300 cursor-pointer;
+  @apply bg-white rounded-lg border border-slate-200 overflow-hidden transition-shadow duration-200 hover:shadow-md cursor-pointer;
 }
 
 .blog-card-image {
-  @apply w-full h-60 overflow-hidden bg-slate-100 relative;
+  @apply w-full h-48 overflow-hidden bg-slate-100 relative;
 }
 
 .blog-card-image img {
-  @apply w-full h-full object-cover transition-transform duration-300;
-}
-
-.blog-card:hover .blog-card-image img {
-  @apply scale-105;
+  @apply w-full h-full object-cover;
 }
 
 .blog-card-content {
-  @apply p-6 space-y-4;
+  @apply p-4 space-y-3;
 }
 
 .blog-card-title {
-  @apply text-xl font-bold text-gray-900 leading-tight;
+  @apply text-lg font-bold text-gray-900 leading-snug;
 }
 
 .blog-card-description {
-  @apply text-slate-600 text-sm leading-relaxed line-clamp-3;
+  @apply text-slate-600 text-sm leading-relaxed line-clamp-2;
 }
 
 .blog-card-link {
-  @apply inline-flex text-snap-brand font-semibold text-sm hover:text-snap-brand-dark transition-colors;
+  @apply inline-flex text-snap-brand font-semibold text-xs hover:text-snap-brand-dark transition-colors;
 }
 
 .home-faq-toggle {
