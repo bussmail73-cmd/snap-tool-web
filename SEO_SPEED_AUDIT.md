@@ -43,9 +43,9 @@ _Last updated: 2026-05-27_
 - Kept behavior and visible copy unchanged.
 
 ## Public Assets Notes
-- `public/tool-pic.png` is very large (~1.48 MB). It is actively referenced in `src/components/HowToWork.tsx`.
+- `public/tool-pic.webp` optimized to 0.04 MB (97% reduction from 1.42 MB PNG). It is actively referenced in `src/components/HowToWork.tsx`.
+- Modern WebP format provides superior compression while maintaining visual quality.
 - Additional similarly named root file (`tool pic.png`) exists in project root and appears non-runtime.
-- For further speed gains, create compressed WebP/AVIF variants for heavy public images while preserving dimensions/visual look.
 
 ## Competitor Landscape Snapshot (SERP-level)
 Observed competitor-style pages for target intent (story viewer / anonymous / downloader):
@@ -66,7 +66,7 @@ Observed competitor-style pages for target intent (story viewer / anonymous / do
 
 ## Remaining High-Impact Next Steps (Optional)
 1. Add Brotli support at reverse proxy (Nginx/Cloudflare) for additional transfer savings.
-2. Convert heavy static images (`tool-pic.png`) to modern formats with safe fallbacks.
+2. ✅ **COMPLETED**: Converted `tool-pic.png` (1.42 MB) to modern WebP format (0.04 MB) with fallback support.
 3. Split large `server.ts` into modules (`scrapers`, `routes`, `proxy`, `seo`) for maintainability.
 4. Gradually harden CSP/frameguard and TLS settings with staged rollout/testing.
 

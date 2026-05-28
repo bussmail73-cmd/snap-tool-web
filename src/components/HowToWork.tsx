@@ -225,7 +225,7 @@ export default function HowToWork({ tool }: HowToWorkProps) {
         <div className="lg:col-span-5 flex items-center justify-center w-full">
           <div className="w-full max-w-[480px] aspect-[4/3] rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(234,179,8,0.2)] border-2 border-yellow-400/20 group">
             <img
-              src="/tool-pic.png?v=20260527"
+              src="/tool-pic.webp?v=20260527"
               alt={`${tool.name} Tutorial Guide`}
               width={1024}
               height={680}
