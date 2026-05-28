@@ -38,8 +38,8 @@ export default function Blog() {
       
       <section className="home-section" style={{ paddingTop: "120px" }}>
         <div className="home-section-header">
-          <h1>Blog</h1>
-          <p>Read the latest blog posts and articles</p>
+          <h2>Blog & Articles</h2>
+          <p>Discover expert tips, guides, and the latest updates about Snapchat tools. Learn best practices for anonymous browsing, content downloading, and more from the Getinbex team. Stay informed with community-driven insights and industry trends.</p>
         </div>
       </section>
     </div>
