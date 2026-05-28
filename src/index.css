@@ -386,6 +386,43 @@
   @apply text-base font-bold text-gray-900 leading-relaxed flex-1;
 }
 
+/* Blog Card Styles */
+.blog-posts-grid {
+  @apply grid gap-8 md:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 max-w-6xl mx-auto;
+}
+
+.blog-card {
+  @apply bg-white rounded-xl border border-slate-200 overflow-hidden transition-all duration-300 hover:shadow-lg hover:border-slate-300 cursor-pointer;
+}
+
+.blog-card-image {
+  @apply w-full h-60 overflow-hidden bg-slate-100 relative;
+}
+
+.blog-card-image img {
+  @apply w-full h-full object-cover transition-transform duration-300;
+}
+
+.blog-card:hover .blog-card-image img {
+  @apply scale-105;
+}
+
+.blog-card-content {
+  @apply p-6 space-y-4;
+}
+
+.blog-card-title {
+  @apply text-xl font-bold text-gray-900 leading-tight;
+}
+
+.blog-card-description {
+  @apply text-slate-600 text-sm leading-relaxed line-clamp-3;
+}
+
+.blog-card-link {
+  @apply inline-flex text-snap-brand font-semibold text-sm hover:text-snap-brand-dark transition-colors;
+}
+
 .home-faq-toggle {
   @apply text-2xl font-bold text-snap-brand ml-4 flex-shrink-0;
 }
